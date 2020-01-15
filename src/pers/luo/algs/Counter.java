@@ -12,7 +12,8 @@ public class Counter {
     public String toString()
     { return count + " " + name; }
 
-    public static void main(String[] args)  // 测试用例
+    // Test use case
+    public static void main(String[] args)
     {
         Counter heads = new Counter("heads");
         Counter tails = new Counter("tails");
