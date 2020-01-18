@@ -41,13 +41,9 @@ public class ArrayStack<Item> implements Iterable<Item> {
 
         public boolean hasNext() { return i > 0;  }
         public Item next()       { return a[--i]; }
-        public void remove()     {                }
     }
-
     public Iterator<Item> iterator()
-    {
-        return new ReverseArrayIterator();
-    }
+    { return new ReverseArrayIterator(); }
 
     public static void main(String[] args)
     {

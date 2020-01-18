@@ -48,7 +48,6 @@ public class Stack<Item> implements Iterable<Item> {
 
         public boolean hasNext()
         { return current != null; }
-        public void remove() {}
         public Item next()
         {
             Item item = current.item;
@@ -56,7 +55,6 @@ public class Stack<Item> implements Iterable<Item> {
             return item;
         }
     }
-
     public Iterator<Item> iterator()
     {
         return new ListIterator();
