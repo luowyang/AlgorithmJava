@@ -3,6 +3,7 @@ package pers.luo.algs;
 import edu.princeton.cs.algs4.StdIn;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class Queue<Item> implements Iterable<Item> {
     private Node first; // refer to first item
@@ -41,6 +42,7 @@ public class Queue<Item> implements Iterable<Item> {
 
     public Item dequeue()
     {   // delete and return item from beginning
+        if (isEmpty()) throw new NoSuchElementException("Queue underflow");
         Item item = first.item;
         first = first.next;
         if (isEmpty()) last = null;
@@ -55,6 +57,7 @@ public class Queue<Item> implements Iterable<Item> {
         { return current != null; }
         public Item next()
         {
+            if(!hasNext()) throw new NoSuchElementException("Queue iterator out of bound");
             Item item = current.item;
             current = current.next;
             return item;

@@ -3,6 +3,7 @@ package pers.luo.algs;
 import edu.princeton.cs.algs4.StdIn;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class Stack<Item> implements Iterable<Item> {
     private Node top;   // stack top entry
@@ -37,6 +38,7 @@ public class Stack<Item> implements Iterable<Item> {
 
     public Item pop()
     {   // delete and return top item
+        if (isEmpty()) throw new NoSuchElementException("Stack underflow");
         Item item = top.item;
         top = top.next;
         N--;
@@ -50,6 +52,7 @@ public class Stack<Item> implements Iterable<Item> {
         { return current != null; }
         public Item next()
         {
+            if(!hasNext()) throw new NoSuchElementException("Stack iterator out of bound");
             Item item = current.item;
             current = current.next;
             return item;
