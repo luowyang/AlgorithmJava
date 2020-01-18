@@ -51,7 +51,7 @@ public class ArrayStack<Item> implements Iterable<Item> {
 
     public static void main(String[] args)
     {
-        Stack<String> stack = new Stack<String>(100);
+        Stack<String> stack = new Stack<String>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
             if (!item.equals("-"))
