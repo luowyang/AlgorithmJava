@@ -4,7 +4,7 @@ import edu.princeton.cs.algs4.StdIn;
 
 import java.util.Iterator;
 
-public class ArrayStack<Item> implements Iterable<Item> {
+public class ResizingArrayStack<Item> implements Iterable<Item> {
     private Item[] a = (Item[]) new Object[1];    // stack entries
     private int N = 0;                              // size
 
@@ -47,7 +47,7 @@ public class ArrayStack<Item> implements Iterable<Item> {
 
     public static void main(String[] args)
     {
-        Stack<String> stack = new Stack<String>();
+        ResizingArrayStack<String> stack = new ResizingArrayStack<String>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
             if (!item.equals("-"))
