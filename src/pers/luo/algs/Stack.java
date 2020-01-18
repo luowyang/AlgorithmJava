@@ -44,15 +44,15 @@ public class Stack<Item> implements Iterable<Item> {
     }
 
     private class ListIterator implements Iterator<Item> {
-        private Node x = top;  // i indicates which element to be took
+        private Node current= top;  // current indicates which element to be took
 
         public boolean hasNext()
-        { return x != null; }
+        { return current != null; }
         public void remove() {}
         public Item next()
         {
-            Item item = x.item;
-            x = x.next;
+            Item item = current.item;
+            current = current.next;
             return item;
         }
     }
