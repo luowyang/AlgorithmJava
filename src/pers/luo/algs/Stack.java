@@ -6,14 +6,16 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class Stack<Item> implements Iterable<Item> {
-    private Node top;   // stack top entry
+    private Node<Item> top;   // stack top entry
     private int N;      // size
-    private class Node
-    {   // embedded Node class for linked list
+    private static class Node<Item>
+    {   // private static nested Node class for linked list, only accessed by enclosing class
+        // should be declared a generic because static nested class cannot access parameterized type if Outer class
+        // "Item" of Node has different meaning than that of the top-level class
         Item item;
-        Node next;
+        Node<Item> next;
 
-        public Node(Item item, Node next)
+        public Node(Item item, Node<Item> next)
         {
             this.item = item;
             this.next = next;
@@ -32,7 +34,7 @@ public class Stack<Item> implements Iterable<Item> {
 
     public void push(Item item)
     {   // add item to stack top
-        top = new Node(item, top);
+        top = new Node<Item>(item, top);
         N++;
     }
 
@@ -45,8 +47,15 @@ public class Stack<Item> implements Iterable<Item> {
         return item;
     }
 
+    public Item peek()
+    {
+        // return top item without deleting it
+        if (isEmpty()) throw new NoSuchElementException("Stack underflow");
+        return top.item;
+    }
+
     private class ListIterator implements Iterator<Item> {
-        private Node current= top;  // current indicates which element to be took
+        private Node<Item> current= top;  // current indicates which element to be took
 
         public boolean hasNext()
         { return current != null; }

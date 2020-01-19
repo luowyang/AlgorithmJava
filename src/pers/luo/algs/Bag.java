@@ -6,14 +6,16 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class Bag<Item> implements Iterable<Item> {
-    private Node first; // refer to first item
+    private Node<Item> first; // refer to first item
     private int N;
-    private class Node
-    {   // embedded class for Node of linked list
+    private static class Node<Item>
+    {   // private static nested Node class for linked list, only accessed by enclosing class
+        // should be declared a generic because static nested class cannot access parameterized type if Outer class
+        // "Item" of Node has different meaning than that of the top-level class
         Item item;
-        Node next;
+        Node<Item> next;
 
-        public Node(Item item, Node next)
+        public Node(Item item, Node<Item> next)
         {
             this.item = item;
             this.next = next;
@@ -28,12 +30,12 @@ public class Bag<Item> implements Iterable<Item> {
 
     public void add(Item item)
     {   // add item to the bag
-        first = new Node(item, first);
+        first = new Node<Item>(item, first);
         N++;
     }
 
     private class ListIterator implements Iterator<Item> {
-        private Node current = first;
+        private Node<Item> current = first;
 
         public boolean hasNext()
         { return current != null; }

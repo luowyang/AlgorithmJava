@@ -5,17 +5,12 @@ import edu.princeton.cs.algs4.StdIn;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class Queue<Item> implements Iterable<Item> {
-    private Node<Item> first; // refer to first item
-    private Node<Item> last;  // refer to last item
-    private int N;      // size of queue
-    private static class Node<Item>
-    {   // private static nested Node class for linked list, only accessed by enclosing class
-        // should be declared a generic because static nested class cannot access parameterized type if Outer class
-        // "Item" of Node has different meaning than that of the top-level class
+public class CircularQueue<Item> implements Iterable<Item> {
+    private Node<Item> last;
+    private int N;
+    private static class Node<Item> {
         Item item;
         Node<Item> next;
-
         public Node(Item item, Node<Item> next)
         {
             this.item = item;
@@ -24,53 +19,54 @@ public class Queue<Item> implements Iterable<Item> {
     }
 
     public boolean isEmpty()
-    { return first == null; }
+    { return last == null; }
 
     public int size()
     { return N; }
 
     public void enqueue(Item item)
-    {   // add item to the end
+    {
         if (isEmpty()) {
             last = new Node<Item>(item, null);
-            first = last;
+            last.next = last;   // maintain circular
         }
         else {
-            last.next = new Node<Item>(item, null);
+            last.next = new Node<Item>(item, last.next);
             last = last.next;
         }
         N++;
     }
 
     public Item dequeue()
-    {   // delete and return item from beginning
+    {
         if (isEmpty()) throw new NoSuchElementException("Queue underflow");
-        Item item = first.item;
-        first = first.next;
-        if (isEmpty()) last = null;
+        Item item = last.next.item;
+        if (N == 1) last = null;
+        else        last.next = last.next.next;
         N--;
         return item;
     }
 
-    private class ListIterator implements Iterator<Item> {
-        private Node<Item> current = first;
-
-        public boolean hasNext()
-        { return current != null; }
-        public Item next()
-        {
-            if(!hasNext()) throw new NoSuchElementException("Queue iterator out of bound");
-            Item item = current.item;
-            current = current.next;
+    private class CircularLinkedListIterator implements Iterator<Item> {
+        private Node<Item> cur = last;
+        private int count = 0;
+        public boolean hasNext() {
+            return count < N;
+        }
+        public Item next() {
+            if (!hasNext()) throw new NoSuchElementException("Queue iterator out of bound");
+            Item item = cur.next.item;
+            cur = cur.next;
+            count++;
             return item;
         }
     }
     public Iterator<Item> iterator()
-    { return new ListIterator();}
+    { return new CircularLinkedListIterator(); }
 
     public static void main(String[] args)
     {
-        Queue<String> queue = new Queue<String>();
+        CircularQueue<String> queue = new CircularQueue<String>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
             if (!item.equals("-"))

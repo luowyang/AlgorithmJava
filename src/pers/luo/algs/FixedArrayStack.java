@@ -12,6 +12,9 @@ public class FixedArrayStack<Item> implements Iterable<Item> {
     public FixedArrayStack(int cap)
     { a = (Item[]) new Object[cap]; }
 
+    public boolean isFull()
+    { return N == a.length; }
+
     public boolean isEmpty()
     { return N == 0; }
 
@@ -20,7 +23,7 @@ public class FixedArrayStack<Item> implements Iterable<Item> {
 
     public void push(Item item)
     {
-        if (N == a.length) throw new StackOverflowError("Stack overflow");
+        if (isFull()) throw new StackOverflowError("Stack overflow");
         a[N++] = item;
     }
 
