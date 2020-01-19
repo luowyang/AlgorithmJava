@@ -23,6 +23,14 @@ public class Queue<Item> implements Iterable<Item> {
         }
     }
 
+    public Queue() { }
+
+    public Queue(Queue<Item> source)
+    {
+        for (Item item : source)
+            this.enqueue(item);
+    }
+
     public boolean isEmpty()
     { return first == null; }
 
@@ -79,8 +87,14 @@ public class Queue<Item> implements Iterable<Item> {
                 System.out.print(queue.dequeue() + " ");
         }
         System.out.println("(" + queue.size() + " left on queue)");
+        Queue<String> another = new Queue<>(queue);
+        System.out.print("remnants on another queue:");
+        for (String s : another)
+            System.out.print(" " + s);
+        System.out.println("");
         System.out.print("remnants on queue:");
         for (String s : queue)
             System.out.print(" " + s);
+        System.out.println("");
     }
 }

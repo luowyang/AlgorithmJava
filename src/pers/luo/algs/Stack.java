@@ -22,6 +22,17 @@ public class Stack<Item> implements Iterable<Item> {
         }
     }
 
+    public Stack() { }
+
+    public Stack(Stack<Item> source)
+    {
+        Stack<Item> temp = new Stack<>();
+        for (Item item : source)
+            temp.push(item);
+        for (Item item : temp)
+            this.push(item);
+    }
+
     public boolean isEmpty()
     {
         return top == null;
@@ -83,8 +94,14 @@ public class Stack<Item> implements Iterable<Item> {
                 System.out.print(stack.pop() + " ");
         }
         System.out.println("(" + stack.size() + " left on stack)");
+        Stack<String> another = new Stack<>(stack);
+        System.out.print("remnants on another stack:");
+        for (String s : another)
+            System.out.print(" " + s);
+        System.out.println("");
         System.out.print("remnants on stack:");
         for (String s : stack)
             System.out.print(" " + s);
+        System.out.println("");
     }
 }
