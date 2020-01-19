@@ -4,7 +4,7 @@ import edu.princeton.cs.algs4.StdIn;
 
 import java.util.Iterator;
 
-public class DoubleLinkedList<Item> implements Iterable<Item> {
+public class DoublyLinkedList<Item> implements Iterable<Item> {
     private DoubleNode first;
     private DoubleNode last;
     private int N;
@@ -88,7 +88,7 @@ public class DoubleLinkedList<Item> implements Iterable<Item> {
         N--;
     }
 
-    private class DoubleLinkedListIterator implements Iterator<Item> {
+    private class DoublyLinkedListIterator implements Iterator<Item> {
         private DoubleNode cur = first;
         public boolean hasNext()
         { return cur != null;}
@@ -100,17 +100,17 @@ public class DoubleLinkedList<Item> implements Iterable<Item> {
         }
     }
     public Iterator<Item> iterator()
-    { return new DoubleLinkedListIterator(); }
+    { return new DoublyLinkedListIterator(); }
 
     public static void main(String[] args)
     {
-        DoubleLinkedList<String> l = new DoubleLinkedList<>();
+        DoublyLinkedList<String> l = new DoublyLinkedList<>();
         while (!StdIn.isEmpty()) {
             String s = StdIn.readString();
             if (s.equals("-")) l.insertFirst(s);
             else               l.insertLast(s);
         }
-        printList(l, "Items on double linked list:");
+        printList(l, "Items on doubly linked list:");
         // delete first and last test
         l.deleteFirst();
         printList(l, "delete first:");
@@ -127,7 +127,7 @@ public class DoubleLinkedList<Item> implements Iterable<Item> {
         printList(l, "delete test:");
     }
 
-    public static void printList(DoubleLinkedList<String> list, String message)
+    public static void printList(DoublyLinkedList<String> list, String message)
     {
         System.out.print(message);
         for (String s : list) System.out.print(" " + s);
