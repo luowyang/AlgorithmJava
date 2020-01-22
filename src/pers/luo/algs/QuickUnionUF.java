@@ -2,7 +2,7 @@ package pers.luo.algs;
 
 import edu.princeton.cs.algs4.StdIn;
 
-public class QuickUnionUF {
+public class QuickUnionUF implements UF {
     private int[] id;
     private int count;
 
@@ -48,6 +48,6 @@ public class QuickUnionUF {
             uf.union(p, q);
             System.out.println(p + " " + q);
         }
-        System.out.println(uf.count() + "components");
+        System.out.println(uf.count() + " components");
     }
 }
