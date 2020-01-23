@@ -2,15 +2,18 @@ package pers.luo.algs;
 
 import edu.princeton.cs.algs4.StdIn;
 
-public class Selection {
+public class Shell {
     public static void sort(Comparable[] a)
     {
         int N = a.length;
-        for (int i = 0; i < N; i++) {
-            int min = i;
-            for (int j = i + 1; j < N; j++)
-                if (less(a[j], a[min])) min = j;
-            exch(a, i, min);
+        int h = 1;
+        while (h < N/3) h = 3*h + 1;    // h_k = 1/2(3^k-1)
+        while (h >= 1) {
+            for (int i = h; i < N; i++) {
+                for (int j = i; j >= h && less(a[j], a[j-h]); j-=h)
+                    exch(a, j, j-h);
+            }
+            h /= 3;
         }
     }
 

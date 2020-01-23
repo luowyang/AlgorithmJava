@@ -2,10 +2,10 @@ package pers.luo.algs;
 
 import pers.luo.algs.Date;
 
-public class Transaction {
-    private String who;
-    private Date when;
-    private double amount;
+public class Transaction implements Comparable<Transaction> {
+    private final String who;
+    private final Date when;
+    private final double amount;
 
     public Transaction(String who, Date when, double amount)
     { this.who = who; this.when = when; this.amount = amount; }
@@ -40,6 +40,13 @@ public class Transaction {
         if (!this.when.equals(t.when)) return false;
         if (this.amount != t.amount) return false;
         return true;
+    }
+
+    public int compareTo(Transaction that)
+    {
+        if (this.amount > that.amount) return +1;
+        if (this.amount < that.amount) return -1;
+        return 0;
     }
 
     public static void main(String[] args)
