@@ -5,10 +5,9 @@ import edu.princeton.cs.algs4.StdIn;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-// linked list with sentinel
-public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item> {
+public class LinkedListNaive<Item extends Comparable<Item>> implements Iterable<Item> {
     private int length;
-    private Node head = new Node(null, null);   // sentinel node
+    private Node head;
     private class Node {
         Item item;
         Node next;
@@ -17,6 +16,12 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
             this.item = item;
             this.next = next;
         }
+    }
+    private class Nodes {
+        Node node1;
+        Node node2;
+        public Nodes(Node node1, Node node2)
+        { this.node1 = node1; this.node2 = node2; }
     }
 
     public boolean isEmpty()
@@ -27,7 +32,7 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
 
     public void add(Item item)
     {
-        head.next = new Node(item, head.next);
+        head = new Node(item, head);
         length++;
     }
 
@@ -35,7 +40,7 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
     {
         if (index <= 0 || index > length)
             throw new NoSuchElementException("Linked List index out of bound");
-        /*if (index == 1) {
+        if (index == 1) {
             head = head.next;
         }
         else {
@@ -43,17 +48,13 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
             for (int k = 1; k < index - 1; k++)
                 prev = prev.next;
             removeAfter(prev);
-        }*/
-        Node prev = head;
-        for (int k = 1; k < index - 1; k++)
-            prev = prev.next;
-        removeAfter(prev);
+        }
         length--;
     }
 
     public boolean find(Item key)
     {
-        Node cur = head.next;
+        Node cur = head;
         while (cur != null && !cur.item.equals(key)) cur = cur.next;
         return cur != null;
     }
@@ -73,6 +74,10 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
 
     public void remove(Item key)
     {
+        while (head != null && head.item.equals(key)) {
+            head = head.next;
+            length--;
+        }
         if (isEmpty()) return;
         for (Node prev = head; prev.next != null;) {
             if (prev.next.item.equals(key)) {
@@ -85,72 +90,56 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
         }
     }
 
-    private Node merge(Node left, Node right)
+    private Nodes merge(Node lo, Node mid, Node hi)
     {
-        Node first = new Node(null, left);
-        Node cur = first;
-        while (left != null && right != null)
-        {
-            if (left.item.compareTo(right.item) <= 0) {
-                cur.next = left;
+        Node cur, first;
+        if (lo.item.compareTo(mid.next.item) > 0) {
+            first = mid.next;
+            mid.next = first.next;
+            first.next = lo;
+        }
+        else {
+            first = lo;
+        }
+        cur = first;
+        Node left = cur.next;
+        while (cur != mid && cur != hi) {
+            if (left.item.compareTo(mid.next.item) <= 0) {
+                cur = cur.next;
                 left = left.next;
             }
             else {
-                cur.next = right;
-                right = right.next;
+                cur.next = mid.next;
+                mid.next = mid.next.next;
+                cur.next.next = left;
+                cur = cur.next;
             }
-            cur = cur.next;
         }
-        if (left == null) cur.next = right;
-        else              cur.next = left;
-        return first.next;
+        return new Nodes(first, cur==mid?hi:mid);
     }
 
     public void sort()
     {
-        head.next = sortTD(head.next);
-    }
-
-    private Node sortTD(Node node)
-    {
-        if (node.next == null) return node;
-        Node right = node;
-        Node fast = node.next;   //fast and slow pointers
-        while (fast != null && fast.next != null) {
-            right = right.next;
-            fast = fast.next.next;
-        }
-        Node t = right.next;
-        right.next = null;
-        right = t;
-        node = sortTD(node);
-        right = sortTD(right);
-        return merge(node, right);
-    }
-
-    public void sortBU()
-    {
         if (isEmpty()) throw new RuntimeException("Cannot sort empty list");
         for (int sz = 1; sz < length; sz += sz)
         {
-            Node left = head;
-            Node right = head.next;
-            while (right != null) {
+            Node mid = head;
+            Node right;
+            for (int count = 1; count < sz; count++) mid = mid.next;
+            right = mid.next;
+            for (int count = 1; count < sz && right.next != null; count++) right = right.next;
+            Nodes nodes = merge(head, mid, right);
+            head = nodes.node1;
+            Node left;
+            while (nodes.node2.next != null) {
+                left = nodes.node2;
+                mid = left.next;
+                for (int count = 1; count < sz && mid.next != null; count++) mid = mid.next;
+                right = mid.next;
+                if (right == null) break;
                 for (int count = 1; count < sz && right.next != null; count++) right = right.next;
-                if (right.next == null) break;
-                Node t = right.next;
-                right.next = null;
-                right = t;
-                for (int count = 1; count < sz && t.next != null; count++) t = t.next;
-                if (t.next != null) {
-                    Node t2 = t.next;
-                    t.next = null;
-                    t = t2;
-                }
-                left.next = merge(left.next, right);
-                while (left.next != null) left = left.next;
-                left.next = t;
-                right = left.next;
+                nodes = merge(left.next, mid, right);
+                left.next = nodes.node1;
             }
         }
     }
@@ -158,7 +147,7 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
     public boolean isSorted()
     {
         if (isEmpty()) return false;
-        for (Node cur = head.next; cur.next != null; cur = cur.next)
+        for (Node cur = head; cur.next != null; cur = cur.next)
             if (cur.item.compareTo(cur.next.item) > 0) return false;
         return true;
     }
@@ -175,7 +164,6 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
     public void reverseLoop()
     {
         if (isEmpty()) return;
-        head = head.next;
         Node first = head.next;
         head.next = null;
         while (first != null) {
@@ -184,7 +172,6 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
             head = first;
             first = second;
         }
-        head = new Node(null, head);
     }
 
     public Node reverseRecursive(Node node)
@@ -199,10 +186,10 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
     }
 
     public void reverse()
-    { head = new Node(null, reverseRecursive(head.next)); }
+    { head = reverseRecursive(head); }
 
-    private class LinkedListIterator implements Iterator<Item> {
-        private Node cur = head.next;
+    private class LinkedListNaiveIterator implements Iterator<Item> {
+        private Node cur = head;
         public boolean hasNext()
         { return cur != null;}
         public Item next()
@@ -213,11 +200,11 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
         }
     }
     public Iterator<Item> iterator()
-    { return new LinkedListIterator(); }
+    { return new LinkedListNaiveIterator(); }
 
     public static void main(String[] args)
     {
-        LinkedList<String> l = new LinkedList<>();
+        LinkedListNaive<String> l = new LinkedListNaive<>();
         while(!StdIn.isEmpty()) {
             String s = StdIn.readString();
             // if (!s.equals("-")) l.add(s);
@@ -225,11 +212,7 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
         }
         System.out.println("size: " + l.size());
         System.out.println("is sorted: " + l.isSorted());
-        for (String s : l)
-            System.out.print(s + " ");
-        System.out.println("");
         l.sort();
-//        l.sortBU();
         System.out.println("is sorted: " + l.isSorted());
         for (String s : l)
             System.out.print(s + " ");

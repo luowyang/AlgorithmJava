@@ -73,6 +73,28 @@ public class Merge {
             else                           a[k] = aux[i++]; // a[i] <= a[j]
     }
 
+    public static void natural(Comparable[] a)
+    {
+        int N = a.length;
+        int mid, hi;
+        Comparable[] aux = new Comparable[N];
+        boolean sorted = false;
+        while (!sorted) {
+            for (int lo = 0; lo < N; lo = hi) {
+                for (mid = lo + 1; mid < N && !less(a[mid], a[mid - 1]); mid++) ;
+                for (hi = mid + 1; hi < N && !less(a[hi], a[hi - 1]); hi++) ;
+                if (mid == N) {
+                    if (lo != 0) continue;
+                    else {
+                        sorted = true;
+                        break;
+                    }
+                }
+                merge(a, lo, mid - 1, hi - 1, aux);
+            }
+        }
+    }
+
     public static boolean less(Comparable v, Comparable w)
     { return v.compareTo(w) < 0; }
 
@@ -93,7 +115,8 @@ public class Merge {
     public static void main(String[] args)
     {
         String[] a = StdIn.readAllStrings();
-        sort(a, "BU");
+        //sort(a, "BU");
+        natural(a);
         System.out.println("is sorted: " + isSorted(a));
         show(a);
     }

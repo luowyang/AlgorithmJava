@@ -10,6 +10,7 @@ public class SortCompare {
         if (alg.equals("Selection")) Selection.sort(a);
         if (alg.equals("Shell"))     Shell.sort(a);
         if (alg.equals("Merge"))     Merge.sort(a);
+        if (alg.equals("Natural"))   Merge.natural(a);
         return timer.elapsedTime();
     }
 
@@ -21,6 +22,7 @@ public class SortCompare {
         {
             for (int i = 0; i < N; i++)
                 a[i] = StdRandom.uniform();
+            if (!Insertion.isSorted(a)) new RuntimeException("Sorting algorithm failed for %s" + alg);
             total += time(alg, a);
         }
         return total;
