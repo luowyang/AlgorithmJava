@@ -142,15 +142,17 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
                 right.next = null;
                 right = t;
                 for (int count = 1; count < sz && t.next != null; count++) t = t.next;
-                if (t.next != null) {
-                    Node t2 = t.next;
-                    t.next = null;
-                    t = t2;
+                if (t.next == null) {
+                    left.next = merge(left.next, right);
+                    break;
                 }
+                Node t2 = t.next;
+                t.next = null;
+                t = t2;
                 left.next = merge(left.next, right);
                 while (left.next != null) left = left.next;
                 left.next = t;
-                right = left.next;
+                right = t;
             }
         }
     }
@@ -228,8 +230,8 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
         for (String s : l)
             System.out.print(s + " ");
         System.out.println("");
-        l.sort();
-//        l.sortBU();
+//        l.sort();
+        l.sortBU();
         System.out.println("is sorted: " + l.isSorted());
         for (String s : l)
             System.out.print(s + " ");
