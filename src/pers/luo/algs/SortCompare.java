@@ -11,6 +11,7 @@ public class SortCompare {
         if (alg.equals("Shell"))     Shell.sort(a);
         if (alg.equals("Merge"))     Merge.sort(a);
         if (alg.equals("Natural"))   Merge.natural(a);
+        if (alg.equals("Quick"))     Quick.sort(a);
         return timer.elapsedTime();
     }
 
@@ -22,8 +23,8 @@ public class SortCompare {
         {
             for (int i = 0; i < N; i++)
                 a[i] = StdRandom.uniform();
-            if (!Insertion.isSorted(a)) new RuntimeException("Sorting algorithm failed for %s" + alg);
             total += time(alg, a);
+            if (!Quick.isSorted(a)) throw new RuntimeException("Sorting algorithm failed for " + alg + "sort");
         }
         return total;
     }
@@ -37,7 +38,7 @@ public class SortCompare {
         //double t1 = timeRandomInput(alg1, N/10, T/5);
         double t1 = timeRandomInput(alg1, N, T);
         double t2 = timeRandomInput(alg2, N, T);
-        System.out.printf("For %d random Doubles\n%s is", N, alg1);
-        System.out.printf(" %.2f times faster than %s\n", t2/t1, alg2);
+        System.out.printf("For %d random Doubles\n%ssort is", N, alg1);
+        System.out.printf(" %.2f times faster than %ssort\n", t2/t1, alg2);
     }
 }

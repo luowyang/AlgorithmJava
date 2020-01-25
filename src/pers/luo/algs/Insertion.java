@@ -22,10 +22,23 @@ public class Insertion {
     public static void sort(Comparable[] a)
     {
         int N = a.length;
+        Comparable t;
         for (int i = 1; i < N; i++) {
-            Comparable t = a[i];
+            t = a[i];
             int j;
             for (j = i; j > 0 && less(t, a[j - 1]); j--)
+                a[j] = a[j - 1];
+            a[j] = t;
+        }
+    }
+
+    public static void sort(Comparable[] a, int lo, int hi)
+    {
+        Comparable t;
+        for (int i = lo+1; i <= hi; i++) {
+            t = a[i];
+            int j;
+            for (j = i; j > lo && less(t, a[j - 1]); j--)
                 a[j] = a[j - 1];
             a[j] = t;
         }
