@@ -157,6 +157,42 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
         }
     }
 
+    public void natural()
+    {
+        Node left = head;
+        Node right = head.next;
+        Node end = head.next;
+        while (left != head || (right.next != null && end.next != null)) {
+            left = head;
+            right = head.next;
+            end = head.next;
+            while (true) {
+                // find left sorted sublist and cut it off
+                while (right.next != null && right.item.compareTo(right.next.item) <= 0)
+                    right = right.next;
+                if (right.next == null) break;  // if no right sublist finish this iteration
+                end = right.next;
+                right.next = null;
+                right = end;
+                // find right sorted sublist and cut it off for merge()
+                while (end.next != null && end.item.compareTo(end.next.item) <= 0)
+                    end = end.next;
+                if (end.next == null) {
+                    left.next = merge(left.next, right);
+                    break;
+                }
+                Node t = end.next;
+                end.next = null;
+                end = t;
+                left.next = merge(left.next, right);
+                // set to next state
+                while (left.next != null) left = left.next;
+                left.next = end;
+                right = end;
+            }
+        }
+    }
+
     public boolean isSorted()
     {
         if (isEmpty()) return false;
@@ -231,7 +267,8 @@ public class LinkedList<Item extends Comparable<Item>> implements Iterable<Item>
             System.out.print(s + " ");
         System.out.println("");
 //        l.sort();
-        l.sortBU();
+//        l.sortBU();
+        l.natural();
         System.out.println("is sorted: " + l.isSorted());
         for (String s : l)
             System.out.print(s + " ");
