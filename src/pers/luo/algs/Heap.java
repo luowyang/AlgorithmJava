@@ -16,14 +16,6 @@ public class Heap {
         }
     }
 
-    public static void swim(Comparable[] a, int k)
-    {
-        while (k > 0 && Util.less(a[parent(k)], a[k])) {
-            Util.exch(a, k, parent(k));
-            k = parent(k);
-        }
-    }
-
     public static void sink(Comparable[] a, int k, int N)
     {
         while (left(k) < N) {
@@ -35,11 +27,11 @@ public class Heap {
         }
     }
 
-    public static int left(int k)
+    public final static int left(int k)
     { return (k << 1) + 1; }
-    public static int right(int k)
+    public final static int right(int k)
     { return (k + 1) << 1; }
-    public static int parent(int k)
+    public final static int parent(int k)
     { return (k - 1) >> 1; }
 
     public static void main(String[] args)
