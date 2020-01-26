@@ -12,6 +12,7 @@ public class SortCompare {
         if (alg.equals("Merge"))     Merge.sort(a);
         if (alg.equals("Natural"))   Merge.natural(a);
         if (alg.equals("Quick"))     Quick.sort(a);
+        if (alg.equals("Heap"))      Heap.sort(a);
         return timer.elapsedTime();
     }
 
@@ -24,7 +25,7 @@ public class SortCompare {
             for (int i = 0; i < N; i++)
                 a[i] = StdRandom.uniform();
             total += time(alg, a);
-            if (!Quick.isSorted(a)) throw new RuntimeException("Sorting algorithm failed for " + alg + "sort");
+            if (!Util.isSorted(a)) throw new RuntimeException("Sorting algorithm failed for " + alg + "sort");
         }
         return total;
     }

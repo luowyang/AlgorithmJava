@@ -26,7 +26,7 @@ public class Insertion {
         for (int i = 1; i < N; i++) {
             t = a[i];
             int j;
-            for (j = i; j > 0 && less(t, a[j - 1]); j--)
+            for (j = i; j > 0 && Util.less(t, a[j - 1]); j--)
                 a[j] = a[j - 1];
             a[j] = t;
         }
@@ -38,43 +38,17 @@ public class Insertion {
         for (int i = lo+1; i <= hi; i++) {
             t = a[i];
             int j;
-            for (j = i; j > lo && less(t, a[j - 1]); j--)
+            for (j = i; j > lo && Util.less(t, a[j - 1]); j--)
                 a[j] = a[j - 1];
             a[j] = t;
         }
-    }
-
-    public static boolean less(Comparable v, Comparable w)
-    { return v.compareTo(w) < 0; }
-
-    public static void exch(Comparable[] a, int i, int j)
-    {
-        Comparable t = a[i];
-        a[i] = a[j];
-        a[j] = t;
-    }
-
-    public static boolean isSorted(Comparable[] a)
-    {
-        for (int i = 1; i < a.length; i++) {
-            if (less(a[i], a[i - 1]))
-                return false;
-        }
-        return true;
-    }
-
-    public static void show(Comparable[] a)
-    {
-        for (int i = 0; i < a.length; i++)
-            System.out.print(a[i] + " ");
-        System.out.println("");
     }
 
     public static void main(String[] args)
     {
         String[] a = StdIn.readAllStrings();
         sort(a);
-        assert isSorted(a);
-        show(a);
+        assert Util.isSorted(a);
+        Util.show(a);
     }
 }

@@ -45,7 +45,7 @@ public class Merge {
         for (int k = lo; k <= hi; k++)
             if      (i > mid)              dest[k] = src[j++]; // i exhausted
             else if (j > hi )              dest[k] = src[i++]; // j exhausted
-            else if (less(src[j], src[i])) dest[k] = src[j++]; // a[j] <  a[i]
+            else if (Util.less(src[j], src[i])) dest[k] = src[j++]; // a[j] <  a[i]
             else                           dest[k] = src[i++]; // a[i] <= a[j]
     }
 
@@ -69,7 +69,7 @@ public class Merge {
         for (int k = lo; k <= hi; k++)
             if      (i > mid)              a[k] = aux[j++]; // i exhausted
             else if (j > hi )              a[k] = aux[i++]; // j exhausted
-            else if (less(aux[j], aux[i])) a[k] = aux[j++]; // a[j] <  a[i]
+            else if (Util.less(aux[j], aux[i])) a[k] = aux[j++]; // a[j] <  a[i]
             else                           a[k] = aux[i++]; // a[i] <= a[j]
     }
 
@@ -81,8 +81,8 @@ public class Merge {
         boolean sorted = false;
         while (!sorted) {
             for (int lo = 0; lo < N; lo = hi) {
-                for (mid = lo + 1; mid < N && !less(a[mid], a[mid - 1]); mid++) ;
-                for (hi = mid + 1; hi < N && !less(a[hi], a[hi - 1]); hi++) ;
+                for (mid = lo + 1; mid < N && !Util.less(a[mid], a[mid - 1]); mid++) ;
+                for (hi = mid + 1; hi < N && !Util.less(a[hi], a[hi - 1]); hi++) ;
                 if (mid == N) {
                     if (lo != 0) continue;
                     else {
@@ -95,29 +95,12 @@ public class Merge {
         }
     }
 
-    public static boolean less(Comparable v, Comparable w)
-    { return v.compareTo(w) < 0; }
-
-    public static boolean isSorted(Comparable[] a)
-    {
-        for (int i = 1; i < a.length; i++)
-            if (less(a[i], a[i - 1])) return false;
-        return true;
-    }
-
-    public static void show(Comparable[] a)
-    {
-        for (int i = 0; i < a.length; i++)
-            System.out.print(a[i] + " ");
-        System.out.println("");
-    }
-
     public static void main(String[] args)
     {
         String[] a = StdIn.readAllStrings();
         //sort(a, "BU");
         natural(a);
-        System.out.println("is sorted: " + isSorted(a));
-        show(a);
+        System.out.println("is sorted: " + Util.isSorted(a));
+        Util.show(a);
     }
 }

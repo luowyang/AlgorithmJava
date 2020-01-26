@@ -2,6 +2,9 @@ package pers.luo.algs;
 
 import java.util.NoSuchElementException;
 
+/*
+* Max priority queue with resizing array and generic type
+*/
 public class MaxPQ<Key extends Comparable<Key>> {
     private Key[] heap;
     private int N = 0;
@@ -11,10 +14,8 @@ public class MaxPQ<Key extends Comparable<Key>> {
 
     private final int left(int k)
     { return (k << 1) + 1; }
-
     private final int right(int k)
     { return (k + 1) << 1; }
-
     private final int parent(int k)
     { return (k - 1) >> 2; }
 
