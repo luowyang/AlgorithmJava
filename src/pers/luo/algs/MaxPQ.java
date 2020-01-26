@@ -1,5 +1,7 @@
 package pers.luo.algs;
 
+import edu.princeton.cs.algs4.StdIn;
+
 import java.util.NoSuchElementException;
 
 /*
@@ -11,6 +13,21 @@ public class MaxPQ<Key extends Comparable<Key>> {
 
     public MaxPQ()
     { heap = (Key[]) new Comparable[1]; }
+
+    public MaxPQ(Key[] array)
+    {
+        if (array == null || array.length == 0) throw new RuntimeException("Null or empty array");
+        int sz = 1;
+        while (sz < array.length) sz+=sz;
+        heap = (Key[]) new Comparable[sz];
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == null) throw new RuntimeException("Null array item");
+            heap[i] = array[i];
+        }
+        N = array.length;
+        for (int k = N/2-1; k >= 0; k--)
+            sink(k);
+    }
 
     private final int left(int k)
     { return (k << 1) + 1; }
@@ -27,29 +44,33 @@ public class MaxPQ<Key extends Comparable<Key>> {
         heap = tmp;
     }
 
-    private boolean less(int i, int j)
-    { return heap[i].compareTo(heap[j]) < 0; }
+    /*private boolean less(int i, int j)
+    { return heap[i].compareTo(heap[j]) < 0; }*/
 
-    private void exch(int i, int j)
-    { Key t = heap[i]; heap[i] = heap[j]; heap[j] = t; }
+    /*private void exch(int i, int j)
+    { Key t = heap[i]; heap[i] = heap[j]; heap[j] = t; }*/
 
     private void swim(int k)
     {
-        while (k > 0 && less(parent(k), k)) {
-            exch(k, parent(k));
+        Key t = heap[k];
+        while (k > 0 && Util.less(heap[parent(k)], t)) {
+            heap[k] = heap[parent(k)];
             k = parent(k);
         }
+        heap[k] = t;
     }
 
     private void sink(int k)
     {
+        Key t = heap[k];
         while (left(k) < N) {
             int j = left(k);
-            if (j < N-1 && less(left(k), right(k))) j++;
-            if (!less(k, j)) break;
-            exch(k, j);
+            if (j < N-1 && Util.less(heap[left(k)], heap[right(k)])) j++;
+            if (!Util.less(t, heap[j])) break;
+            heap[k] = heap[j];
             k = j;
         }
+        heap[k] = t;
     }
 
     public void insert(Key v)
@@ -78,6 +99,12 @@ public class MaxPQ<Key extends Comparable<Key>> {
 
     public static void main(String[] args)
     {
-
+        MaxPQ<String> pq = new MaxPQ<>();
+        while (!StdIn.isEmpty()) {
+            String s = StdIn.readString();
+            if (s.equals("*")) System.out.print(pq.delMax() + " ");
+            else               pq.insert(s);
+        }
+        System.out.println("");
     }
 }

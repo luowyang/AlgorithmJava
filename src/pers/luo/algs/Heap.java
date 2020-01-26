@@ -18,13 +18,15 @@ public class Heap {
 
     public static void sink(Comparable[] a, int k, int N)
     {
+        Comparable t = a[k];
         while (left(k) < N) {
             int j = left(k);
             if (j < N-1 && Util.less(a[j], a[j+1])) j++;
-            if (!Util.less(a[k], a[j])) break;
-            Util.exch(a, k, j);
+            if (!Util.less(t, a[j])) break;
+            a[k] = a[j];
             k = j;
         }
+        a[k] = t;
     }
 
     public final static int left(int k)
