@@ -4,14 +4,14 @@ import edu.princeton.cs.algs4.StdIn;
 
 import java.util.Iterator;
 
-public class DoublyLinkedList<Item> implements Iterable<Item> {
-    private DoubleNode sent;
+public class DoublyLinkedListNaive<Item> implements Iterable<Item> {
+    private DoubleNode first;
+    private DoubleNode last;
     private int N;
     private class DoubleNode {
         Item item;
         DoubleNode prev;
         DoubleNode next;
-        public DoubleNode() { }
         public DoubleNode(Item item, DoubleNode prev, DoubleNode next)
         {
             this.item = item;
@@ -20,46 +20,43 @@ public class DoublyLinkedList<Item> implements Iterable<Item> {
         }
     }
 
-    public DoublyLinkedList()
-    {
-        sent = new DoubleNode();
-        sent.prev = sent;
-        sent.next = sent;
-    }
-
     public boolean isEmpty()
-    { return N == 0; }
+    { return first == null; }
 
     public int size()
     { return N; }
 
     public void insertFirst(Item item)
     {
-        sent.next = new DoubleNode(item, sent, sent.next);
-        sent.next.next.prev = sent.next;
+        first = new DoubleNode(item, null, first);
+        if (first.next == null) last = first;
+        else                    first.next.prev = first;
         N++;
     }
 
     public void insertLast(Item item)
     {
-        sent.prev = new DoubleNode(item, sent.prev, sent);
-        sent.prev.prev.next = sent.prev;
+        last = new DoubleNode(item, last, null);
+        if (last.prev == null) first = last;
+        else                   last.prev.next = last;
         N++;
     }
 
     public void deleteFirst()
     {
         if (isEmpty()) throw new RuntimeException("Double linked list underflow");
-        sent.next = sent.next.next;
-        sent.next.prev = sent;
+        first = first.next;
+        if (first == null) last = null;
+        else               first.prev = null;
         N--;
     }
 
     public void deleteLast()
     {
         if (isEmpty()) throw new RuntimeException("Double linked list underflow");
-        sent.prev = sent.prev.prev;
-        sent.prev.next = sent;
+        last = last.prev;
+        if (last == null) first = null;
+        else              last.next = null;
         N--;
     }
 
@@ -67,7 +64,8 @@ public class DoublyLinkedList<Item> implements Iterable<Item> {
     {
         if (node == null || item == null) return;
         node.prev = new DoubleNode(item, node.prev, node);
-        node.prev.prev.next = node.prev;
+        if (node.prev.prev != null) node.prev.prev.next = node.prev;
+        else                        first = node.prev;
         N++;
     }
 
@@ -75,22 +73,25 @@ public class DoublyLinkedList<Item> implements Iterable<Item> {
     {
         if (node == null || item == null) return;
         node.next = new DoubleNode(item, node, node.next);
-        node.next.next.prev = node.next;
+        if (node.next.next != null) node.next.next.prev = node.next;
+        else                        last = node.next;
         N++;
     }
 
     public void delete(DoubleNode node)
     {
         if (node == null) return;
-        node.prev.next = node.next;
-        node.next.prev = node.prev;
+        if (node.prev != null) node.prev.next = node.next;
+        else                   first = node.next;
+        if (node.next != null) node.next.prev = node.prev;
+        else                   last = node.prev;
         N--;
     }
 
-    private class DoublyLinkedListIterator implements Iterator<Item> {
-        private DoubleNode cur = sent.next;
+    private class DoublyLinkedListNaiveIterator implements Iterator<Item> {
+        private DoubleNode cur = first;
         public boolean hasNext()
-        { return cur != sent;}
+        { return cur != null;}
         public Item next()
         {
             Item item = cur.item;
@@ -99,11 +100,11 @@ public class DoublyLinkedList<Item> implements Iterable<Item> {
         }
     }
     public Iterator<Item> iterator()
-    { return new DoublyLinkedListIterator(); }
+    { return new DoublyLinkedListNaiveIterator(); }
 
     public static void main(String[] args)
     {
-        DoublyLinkedList<String> l = new DoublyLinkedList<>();
+        DoublyLinkedListNaive<String> l = new DoublyLinkedListNaive<>();
         while (!StdIn.isEmpty()) {
             String s = StdIn.readString();
             if (s.equals("-")) l.insertFirst(s);
@@ -116,17 +117,17 @@ public class DoublyLinkedList<Item> implements Iterable<Item> {
         l.deleteLast();
         printList(l, "delete last:");
         // insert before and after test
-        l.insertAfter(l.sent.next, "after");
+        l.insertAfter(l.first, "after");
         printList(l, "insert after first:");
-        l.insertBefore(l.sent.next, "before");
+        l.insertBefore(l.first, "before");
         printList(l, "insert before first:");
         // delete test
-        l.delete(l.sent.next);l.delete(l.sent.next);
-        l.delete(l.sent.prev);l.delete(l.sent.prev);
+        l.delete(l.first);l.delete(l.first);
+        l.delete(l.last);l.delete(l.last);
         printList(l, "delete test:");
     }
 
-    public static void printList(DoublyLinkedList<String> list, String message)
+    public static void printList(DoublyLinkedListNaive<String> list, String message)
     {
         System.out.print(message);
         for (String s : list) System.out.print(" " + s);
