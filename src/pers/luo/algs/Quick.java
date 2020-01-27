@@ -3,6 +3,8 @@ package pers.luo.algs;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdRandom;
 
+import java.util.Comparator;
+
 public class Quick {
     static final int M = 9;
 
@@ -55,6 +57,34 @@ public class Quick {
         while (p >= lo) exch(a, p--, i--);
         sort3way(a, lo, i);
         sort3way(a, j+1, hi);*/
+    }
+
+    public static Comparable select(Comparable[] a, int k)
+    {   // find the kth sequential statistic, k starts from 0
+        // return selectLoop(a, k);
+        return selectRecursive(a, 0, a.length-1, k);
+    }
+
+    private static Comparable selectLoop(Comparable[] a, int k)
+    {
+        int lo = 0;
+        int hi = a.length - 1;
+        while (lo < hi) {
+            int j = partition(a, lo, hi);
+            if      (j == k)  return a[j];
+            else if (j > k )  hi = j - 1;
+            else              lo = j + 1;
+        }
+        return a[k];
+    }
+
+    private static Comparable selectRecursive(Comparable[] a, int lo, int hi, int k)
+    {
+        if (lo == hi) return a[lo];
+        int j = partition(a, lo, hi);
+        if      (j == k) return a[j];
+        else if (j > k ) return selectRecursive(a, lo, j-1, k);
+        else             return selectRecursive(a, j+1, hi, k);
     }
 
     private static int partition(Comparable[] a, int lo, int hi)
@@ -121,6 +151,8 @@ public class Quick {
     public static void main(String[] args)
     {
         String[] a = StdIn.readAllStrings();
+        int k = (a.length - 1)/2;
+        System.out.println(k + "-th sequential statistic is " + select(a, k));
         sort(a);
         System.out.println("is sorted: " + Util.isSorted(a));
         Util.show(a);
