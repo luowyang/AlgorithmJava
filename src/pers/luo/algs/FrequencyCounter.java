@@ -7,6 +7,8 @@ public class FrequencyCounter {
     {
         if (type.equals("List"))
             return new SequentialSearchST<>();
+        else if (type.equals("Array"))
+            return new BinarySearchST<>();
         return new SequentialSearchST<>();
     }
 
