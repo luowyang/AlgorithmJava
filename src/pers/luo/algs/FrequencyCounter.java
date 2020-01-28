@@ -1,5 +1,7 @@
 package pers.luo.algs;
 
+import javafx.scene.paint.Stop;
+
 import java.util.Scanner;
 
 public class FrequencyCounter {
@@ -18,6 +20,7 @@ public class FrequencyCounter {
         int threshold = Integer.parseInt(args[1]);
         ST<String, Integer> st = getST(type);
         Scanner scanner = new Scanner(System.in);
+        Stopwatch timer = new Stopwatch();
         while (scanner.hasNext()) {
             String word = scanner.next();
             if (word.length() < threshold) continue;
@@ -30,6 +33,8 @@ public class FrequencyCounter {
         for (String word : st.keys())
             if (st.get(word) > st.get(max))
                 max = word;
-        System.out.println(max + " " +st.get(max));
+        double t = timer.elapsedTime();
+        System.out.println(max + " " + st.get(max));
+        System.out.println("time: " + t + " seconds");
     }
 }
