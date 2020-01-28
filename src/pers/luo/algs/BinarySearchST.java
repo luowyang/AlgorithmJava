@@ -38,32 +38,56 @@ public class BinarySearchST<Key extends Comparable<Key>, Value> implements Order
 
     @Override
     public Key min() {
-        return null;
+        return isEmpty() ? null : keys[0];
     }
 
     @Override
     public Key max() {
-        return null;
+        return isEmpty() ? null : keys[N-1];
     }
 
     @Override
     public Key floor(Key key) {
-        return null;
+        int lo = 0;
+        int hi = N - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo)/2;
+            if      (keys[mid].compareTo(key) > 0) hi = mid - 1;
+            else if (keys[mid].compareTo(key) < 0) lo = mid + 1;
+            else                                   return keys[mid];
+        }
+        return hi < 0 ? null : keys[hi];
     }
 
     @Override
     public Key ceiling(Key key) {
-        return null;
+        int lo = 0;
+        int hi = N - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo)/2;
+            if      (keys[mid].compareTo(key) > 0) hi = mid - 1;
+            else if (keys[mid].compareTo(key) < 0) lo = mid + 1;
+            else                                   return keys[mid];
+        }
+        return lo >= N ? null : keys[lo];
     }
 
     @Override
     public int rank(Key key) {
-        return 0;
+        int lo = 0;
+        int hi = N - 1;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo)/2;
+            if      (keys[mid].compareTo(key) > 0) hi = mid - 1;
+            else if (keys[mid].compareTo(key) < 0) lo = mid + 1;
+            else                                   return mid;
+        }
+        return hi + 1;
     }
 
     @Override
     public Key select(int k) {
-        return null;
+        return (k < 0 || k >= N) ? null : keys[k];
     }
 
     @Override
@@ -128,5 +152,11 @@ public class BinarySearchST<Key extends Comparable<Key>, Value> implements Order
         }
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));
+        System.out.println("max      : " + st.max());
+        System.out.println("min      : " + st.min());
+        System.out.println("floor D  : " + st.floor("D"));
+        System.out.println("ceiling D: " + st.ceiling("D"));
+        System.out.println("rank N   : " + st.rank("N"));
+        System.out.println("select 4 : " + st.select(4));
     }
 }
