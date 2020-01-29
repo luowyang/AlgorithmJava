@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class SequentialSearchST<Key, Value> implements ST<Key, Value> {
     private int N;
-    private Node head;
+    private final Node head;
     private class Node {
         Key key;
         Value value;

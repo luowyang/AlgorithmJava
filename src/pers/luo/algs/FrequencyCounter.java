@@ -5,13 +5,18 @@ import javafx.scene.paint.Stop;
 import java.util.Scanner;
 
 public class FrequencyCounter {
-    private static ST<String, Integer> getST(String type)
+    private static ST<String, Integer> getST(String alg)
     {
-        if (type.equals("List"))
-            return new SequentialSearchST<>();
-        else if (type.equals("Array"))
-            return new BinarySearchST<>();
-        return new SequentialSearchST<>();
+        switch (alg) {
+            case "List":
+                return new SequentialSearchST<>();
+            case "Array":
+                return new BinarySearchST<>();
+            case "BST":
+                return new BST<>();
+            default:
+                throw new IllegalArgumentException("Unknown algorithm " + alg);
+        }
     }
 
     public static double counter(Queue<String> queue, String alg, int threshold)
