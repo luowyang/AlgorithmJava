@@ -33,8 +33,15 @@ public class SequentialSearchST<Key, Value> implements ST<Key, Value> {
 
     @Override
     public Value get(Key key) {
-        for (Node cur = head.next; cur != null; cur = cur.next)
-            if (cur.key.equals(key)) return cur.value;
+        Node prev;
+        for (prev = head; prev.next != null; prev = prev.next)
+            if (prev.next.key.equals(key)) {
+                Node cur = prev.next;
+                prev.next = cur.next;
+                cur.next = head.next;
+                head.next = cur;
+                return cur.value;
+            }
         return null;
     }
 

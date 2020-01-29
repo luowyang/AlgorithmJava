@@ -7,33 +7,28 @@ public class BinarySearchST<Key extends Comparable<Key>, Value> implements Order
     private Key[] keys;
     private Value[] values;
     private int N;
+    private int cache = 0;
 
     public BinarySearchST() {
-        keys = (Key[]) new Comparable[1];
-        values = (Value[]) new Object[1];
+        keys = (Key[]) new Comparable[2];
+        values = (Value[]) new Object[2];
     }
 
-    private void resize(int maxN)
+    public BinarySearchST(int maxN) {
+        keys = (Key[]) new Comparable[maxN];
+        values = (Value[]) new Object[maxN];
+    }
+
+    private void resize(int capacity)
     {
-        Key[] tmp1 = (Key[]) new Comparable[maxN];
+        Key[] tmp1 = (Key[]) new Comparable[capacity];
         for (int i = 0; i < N; i++)
             tmp1[i] = keys[i];
         keys = tmp1;
-        Value[] tmp2 = (Value[]) new Object[maxN];
+        Value[] tmp2 = (Value[]) new Object[capacity];
         for (int i = 0; i < N; i++)
             tmp2[i] = values[i];
         values = tmp2;
-    }
-
-    private int binarySearch(Key key, int lo, int hi)
-    {
-        while (lo <= hi) {
-            int mid = lo + (hi - lo)/2;
-            if      (keys[mid].compareTo(key) > 0) hi = mid - 1;
-            else if (keys[mid].compareTo(key) < 0) lo = mid + 1;
-            else                                   return mid;
-        }
-        return -1;
     }
 
     @Override
@@ -48,41 +43,31 @@ public class BinarySearchST<Key extends Comparable<Key>, Value> implements Order
 
     @Override
     public Key floor(Key key) {
-        int lo = 0;
-        int hi = N - 1;
-        while (lo <= hi) {
-            int mid = lo + (hi - lo)/2;
-            if      (keys[mid].compareTo(key) > 0) hi = mid - 1;
-            else if (keys[mid].compareTo(key) < 0) lo = mid + 1;
-            else                                   return keys[mid];
-        }
-        return hi < 0 ? null : keys[hi];
+        int pos = rank(key);
+        if (pos < N && keys[pos].compareTo(key) == 0) return keys[pos];
+        if (pos > 0) return keys[pos-1];
+        return null;
     }
 
     @Override
     public Key ceiling(Key key) {
-        int lo = 0;
-        int hi = N - 1;
-        while (lo <= hi) {
-            int mid = lo + (hi - lo)/2;
-            if      (keys[mid].compareTo(key) > 0) hi = mid - 1;
-            else if (keys[mid].compareTo(key) < 0) lo = mid + 1;
-            else                                   return keys[mid];
-        }
-        return lo >= N ? null : keys[lo];
+        int pos = rank(key);
+        return (pos < N) ? keys[pos] : null;
     }
 
     @Override
     public int rank(Key key) {
+        if (cache < N && keys[cache].compareTo(key) == 0) return cache;
         int lo = 0;
         int hi = N - 1;
         while (lo <= hi) {
             int mid = lo + (hi - lo)/2;
-            if      (keys[mid].compareTo(key) > 0) hi = mid - 1;
-            else if (keys[mid].compareTo(key) < 0) lo = mid + 1;
-            else                                   return mid;
+            int cmp = keys[mid].compareTo(key);
+            if      (cmp > 0) hi = mid - 1;
+            else if (cmp < 0) lo = mid + 1;
+            else              {cache = mid; return mid; }
         }
-        return hi + 1;
+        return lo;
     }
 
     @Override
@@ -92,27 +77,41 @@ public class BinarySearchST<Key extends Comparable<Key>, Value> implements Order
 
     @Override
     public Iterable<Key> keys(Key lo, Key hi) {
-        return new ArrayIterable();
+        int low = rank(lo);
+        int high = rank(hi);
+        if (!contains(hi)) high--;
+        return new ArrayIterable(low, high);
     }
     private class ArrayIterable implements Iterable<Key> {
+        private int lo;
+        private int hi;
+        public ArrayIterable(int lo, int hi) {
+            this.lo = lo;
+            this.hi = hi;
+        }
         public Iterator<Key> iterator()
-        { return new ArrayIterator(); }
+        { return new ArrayIterator(lo, hi); }
     }
     private class ArrayIterator implements Iterator<Key> {
-        private int cur = 0;
+        private int cur;
+        private int hi;
+        ArrayIterator(int lo, int hi) {
+            cur = lo;
+            this.hi = hi;
+        }
         public boolean hasNext()
-        { return cur < N; }
+        { return cur <= hi; }
         public Key next()
         { return keys[cur++]; }
     }
 
     @Override
     public void put(Key key, Value value) {
-        int pos = binarySearch(key, 0, N-1);
-        if (pos >= 0) { values[pos] = value; return; }  // if hit, reset value
+        int pos = rank(key);
+        if (pos < N && keys[pos].compareTo(key) == 0) { values[pos] = value; return; }  // if hit, reset value
         if (keys.length == N) resize(2*N);
         int k;
-        for (k = N; k > 0  && key.compareTo(keys[k-1]) < 0; k--)
+        for (k = N; k > pos; k--)
         { keys[k] = keys[k-1]; values[k] = values[k-1]; }
         keys[k] = key;
         values[k] = value;
@@ -121,20 +120,21 @@ public class BinarySearchST<Key extends Comparable<Key>, Value> implements Order
 
     @Override
     public Value get(Key key) {
-        int pos = binarySearch(key, 0, N-1);
-        return pos>=0 ? values[pos] : null;
+        int pos = rank(key);
+        return (pos < N && keys[pos].compareTo(key) == 0) ? values[pos] : null;
     }
 
     @Override
     public void delete(Key key) {
-        int pos = binarySearch(key, 0, N-1);
-        if (pos < 0) return;
+        int pos = rank(key);
+        if (pos >= N || keys[pos].compareTo(key) != 0) return;
         for (int i = pos; i < N-1; i++) {
             keys[i] = keys[i+1];
             values[i] = values[i+1];
         }
-        keys[N-1] = null;
-        values[N-1] = null;
+        N--;
+        keys[N] = null;
+        values[N] = null;
     }
 
     @Override
@@ -152,11 +152,15 @@ public class BinarySearchST<Key extends Comparable<Key>, Value> implements Order
         }
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));
-        System.out.println("max      : " + st.max());
         System.out.println("min      : " + st.min());
+        System.out.println("max      : " + st.max());
         System.out.println("floor D  : " + st.floor("D"));
         System.out.println("ceiling D: " + st.ceiling("D"));
         System.out.println("rank N   : " + st.rank("N"));
         System.out.println("select 4 : " + st.select(4));
+        st.deleteMin();
+        st.deleteMax();
+        for (String s : st.keys())
+            System.out.println(s + " " + st.get(s));
     }
 }
