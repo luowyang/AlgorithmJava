@@ -1,5 +1,7 @@
 package pers.luo.algs;
 
+import edu.princeton.cs.algs4.StdRandom;
+
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -124,11 +126,20 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         if      (cmp > 0) node.left = delete(node.left, key);
         else if (cmp < 0) node.right = delete(node.right, key);
         else {
+            if (node.left == null) return node.right;
             if (node.right == null) return node.left;
+            // randomly delete using predecessor or successor
             Node cur = node;
-            for (node = node.right; node.left != null; node = node.left);
-            node.right = deleteMin(cur.right);
-            node.left = cur.left;
+            if (StdRandom.uniform(2) == 0) {
+                for (node = node.right; node.left != null; node = node.left) ;
+                node.right = deleteMin(cur.right);
+                node.left = cur.left;
+            }
+            else {
+                for (node = node.left; node.right != null; node = node.right) ;
+                node.left = deleteMin(cur.left);
+                node.right = cur.right;
+            }
         }
         node.N = size(node.left) + size(node.right) + 1;
         return node;
