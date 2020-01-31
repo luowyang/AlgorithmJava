@@ -1,31 +1,86 @@
 package pers.luo.algs;
 
 import edu.princeton.cs.algs4.StdDraw;
-import edu.princeton.cs.algs4.StdRandom;
 
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
+public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
     private Node root;
-    private Node cache;
+    // private Node cache;
 
     private int treeLevel;
 
     private class Node {
         Key key;
         Value value;
-        Node left;
-        Node right;
+        Node left, right;
         int N;
+        int height;
         double xCoordinate, yCoordinate;
-        public Node(Key key, Value value, int N) {
+        public Node(Key key, Value value, int N, int height) {
             this.key = key;
             this.value = value;
             this.left = null;
             this.right = null;
             this.N = N;
+            this.height = height;
         }
+    }
+
+    // helper to avoid judging null explicitly
+    private int size(Node node) {
+        return node == null ? 0 : node.N;
+    }
+
+    // helper to avoid judging null explicitly
+    private int height(Node node) {
+        return node == null ? 0 : node.height;
+    }
+
+    private Node rotateLeft(Node node) {
+        Node x = node.right;
+        // set links
+        node.right = x.left;
+        x.left = node;
+        // set heights
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        x.height = 1 + Math.max(height(node), height(x.right));
+        // set sizes
+        x.N = node.N;
+        node.N = size(node.left) + size(node.right) + 1;
+        return x;
+    }
+
+    private Node rotateRight(Node node) {
+        Node x = node.left;
+        // set links
+        node.left = x.right;
+        x.right = node;
+        // set heights
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        x.height = 1 + Math.max(height(node), height(x.left));
+        // set sizes
+        x.N = node.N;
+        node.N = size(node.left) + size(node.right) + 1;
+        return x;
+    }
+
+    private int balanceFactor(Node node) {
+        if (node == null) return 0; // necessary because child would be called and it could be null
+        return height(node.left) - height(node.right);
+    }
+
+    private Node balance(Node node) {
+        if (balanceFactor(node) > 1) {
+            if (balanceFactor(node.left) < 0) node.left = rotateLeft(node.left);  // case 2
+            node = rotateRight(node);   // case 1
+        }
+        if (balanceFactor(node) < -1) {
+            if (balanceFactor(node.right) > 0) node.right = rotateRight(node.right);  // case 3
+            node = rotateLeft(node);   // case 4
+        }
+        return node;
     }
 
     @Override
@@ -78,7 +133,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
             int cmp = cur.key.compareTo(key);
             if      (cmp > 0) { cur = cur.left;                           }
             else if (cmp < 0) { r += size(cur.left) + 1; cur = cur.right; }
-            else              { cache = cur; return r + size(cur.left);   }
+            else              { return r + size(cur.left);   }
         }
         return r;
     }
@@ -90,131 +145,41 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
             int t = size(cur.left);
             if      (t > k) { cur = cur.left;              }
             else if (t < k) { k -= t + 1; cur = cur.right; }
-            else            { cache = cur; return cur.key; }
+            else            {  return cur.key; }
         }
         return null;    // will trigger only if k is out of bound
     }
 
     @Override
-    public void deleteMin() {
-        if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
-        root = deleteMin(root);
-    }
-    private Node deleteMin(Node node) {
-        if (node.left == null) {
-            if (cache == node) cache = null;
-            return node.right;
-        }
-        node.left = deleteMin(node.left);
-        node.N = size(node.left) + size(node.right) + 1;
-        return node;
-    }
-
-    @Override
-    public void deleteMax() {
-        if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
-        root = deleteMax(root);
-    }
-    private Node deleteMax(Node node) {
-        if (node.right == null) {
-            if (cache == node) cache = null;
-            return node.left;
-        }
-        node.right = deleteMin(node.right);
-        node.N = size(node.left) + size(node.right) + 1;
-        return node;
-    }
-
-    @Override
-    public void delete(Key key) {
-        if (key == null) throw new IllegalArgumentException("Argument of delete() cannot be null");
-        if (isEmpty()) return;
-        root = delete(root, key);
-    }
-    private Node delete(Node node, Key key) {
-        if (node == null) return null;
-        int cmp = node.key.compareTo(key);
-        if      (cmp > 0) node.left = delete(node.left, key);
-        else if (cmp < 0) node.right = delete(node.right, key);
-        else {
-            if (cache == node) cache = null;
-            if (node.left == null ) return node.right;
-            if (node.right == null) return node.left;
-            // randomly delete using predecessor or successor
-            Node cur = node;
-            if (StdRandom.uniform(2) == 0) {
-                for (node = node.right; node.left != null; node = node.left) ;
-                node.right = deleteMin(cur.right);
-                node.left = cur.left;
-            }
-            else {
-                for (node = node.left; node.right != null; node = node.right) ;
-                node.left = deleteMin(cur.left);
-                node.right = cur.right;
-            }
-        }
-        node.N = size(node.left) + size(node.right) + 1;
-        return node;
-    }
-
-    @Override
     public Iterable<Key> keys(Key lo, Key hi) {
-        Queue<Key> queue = new Queue<>();
-        keys(root, queue, lo, hi);
-        return queue;
-    }
-    private void keys(Node node, Queue<Key> queue, Key lo, Key hi) {
-        if (node == null) return;
-        int cmplo = node.key.compareTo(lo);
-        int cmphi = node.key.compareTo(hi);
-        if (cmplo > 0) keys(node.left, queue, lo, hi);
-        if (cmplo >= 0 && cmphi <= 0) queue.enqueue(node.key);
-        if (cmphi < 0) keys(node.right, queue, lo, hi);
+        return null;
     }
 
     @Override
     public void put(Key key, Value value) {
-        if (cache != null && cache.key.compareTo(key) == 0) {
-            cache.value = value;
-            return;
-        }
-        root = put(root, key, value);
-    }
-    private Node put(Node node, Key key, Value value)
-    {   // recursively put key-value pair into sub-tree rooted by "node"
-        // return the root of the sub-tree
-        if (node == null) {
-            cache = new Node(key, value, 1);
-            return cache;
-        }
-        int cmp = node.key.compareTo(key);
-        if      (cmp > 0) { node.left = put(node.left, key, value);        }
-        else if (cmp < 0) { node.right = put(node.right, key, value);      }
-        else              { cache = node; node.value = value; return node; }
-        node.N = size(node.left) + size(node.right) + 1;
-        return node;
+
     }
 
     @Override
     public Value get(Key key) {
-        if (cache != null && cache.key.compareTo(key) == 0) return cache.value;
         Node cur = root;
         while (cur != null) {
             int cmp = cur.key.compareTo(key);
             if      (cmp > 0) cur = cur.left;
             else if (cmp < 0) cur = cur.right;
-            else { cache = cur; return cur.value; }
+            else { return cur.value; }
         }
         return null;
     }
 
     @Override
-    public int size() {
-        return size(root);
+    public void delete(Key key) {
+
     }
 
-    private int size(Node node) {
-        return node == null ? 0 : node.N;
+    @Override
+    public int size() {
+        return size(root);
     }
 
     public static void main(String[] args)

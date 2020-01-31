@@ -16,19 +16,20 @@ public class FrequencyCounter {
                 return new BST<>();
             case "LLRB":
                 return new LLRedBlackBST<>();
+            case "TTF":
+                return new TTFBST<>();
             default:
                 throw new IllegalArgumentException("Unknown algorithm " + alg);
         }
     }
 
-    public static double counter(Queue<String> queue, String alg, int threshold)
+    public static double counter(Queue<String> queue, String alg)
     {
         ST<String, Integer> st = getST(alg);
         Queue<String> maxes = new Queue<>();
         int maxCount = 0;
         Stopwatch timer = new Stopwatch();
         for (String word : queue) {
-            if (word.length() < threshold) continue;
             if (!st.contains(word)) st.put(word, 1);
             else                    st.put(word, st.get(word) + 1);
         }
@@ -58,10 +59,12 @@ public class FrequencyCounter {
         int threshold = Integer.parseInt(args[1]);
         Scanner scanner = new Scanner(System.in);
         Queue<String> queue = new Queue<>();
+        Stopwatch timer = new Stopwatch();
         while (scanner.hasNext()) {
             String word = scanner.next();
-            queue.enqueue(word);
+            if (word.length() >= threshold) queue.enqueue(word);
         }
-        counter(queue, alg, threshold);
+        System.out.println("Read input in " + timer.elapsedTime() + " seconds");
+        counter(queue, alg);
     }
 }

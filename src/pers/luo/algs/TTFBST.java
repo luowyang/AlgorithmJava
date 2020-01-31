@@ -2,16 +2,14 @@ package pers.luo.algs;
 
 import edu.princeton.cs.algs4.StdDraw;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
+public class TTFBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
     private static final boolean RED   = true;
     private static final boolean BLACK = false;
 
     private Node root;
-    private Node cache;
 
     private int treeLevel;
 
@@ -126,7 +124,7 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
             int cmp = key.compareTo(cur.key);
             if      (cmp < 0) { cur = cur.left;                           }
             else if (cmp > 0) { r += size(cur.left) + 1; cur = cur.right; }
-            else              { cache = cur; return r + size(cur.left);   }
+            else              { return r + size(cur.left); }
         }
         return r;
     }
@@ -138,7 +136,7 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
             int t = size(cur.left); // get left subtree size
             if      (t > k) { cur = cur.left;              }
             else if (t < k) { k -= t + 1; cur = cur.right; }
-            else            { cache = cur; return cur.key; }
+            else            { return cur.key;              }
         }
         return null;    // will trigger only if k is out of bound
     }
@@ -165,28 +163,27 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
 
     @Override
     public void put(Key key, Value value) {
-        if (cache != null && cache.key.compareTo(key) == 0) {
-            cache.value = value;
-            return;
-        }
         root = put(root, key, value);   // recursive insert on root, return new root
         root.color = BLACK;             // root color is always BLACK (root is pointed by null link)
     }
     // recursively insert new node and adjust parents
     // return link to the root after insertion
     private Node put(Node node, Key key, Value value) {
-        if (node == null) {
-            cache = new Node(key, value, 1, RED);
-            return cache;  // new node is inserted if miss and is always RED
-        }
+        if (node == null) return new Node(key, value, 1, RED);  // new node is inserted if miss and is always RED
+        if (isRed(node.left) && isRed(node.right))     flipColors(node);    // THIS IS WHERE LL-2-3-4 TREE DIFFERS FROM LLRB
         int cmp = key.compareTo(node.key);  // compare searching key to current node's key
         if      (cmp < 0) node.left = put(node.left, key, value);   // if less, turn to left subtree
         else if (cmp > 0) node.right = put(node.right, key, value); // if more, turn to right subtree
-        else              { cache = node; node.value = value; }     // if hit, change current value
-        // now we should check red black properties
-        if (!isRed(node.left) && isRed(node.right))    node = rotateLeft(node);     // repair right leaning RED link
-        if (isRed(node.left) && isRed(node.left.left)) node = rotateRight(node);    // re-balance left skewed 4-node
-        if (isRed(node.left) && isRed(node.right))     flipColors(node);            // decompose balanced 4-node
+        else              node.value = value;                       // if hit, change current value
+        // now we should re-balance 4-nodes
+        if (isRed(node.left)) {     // re-balance left skewed 4-nodes
+            if (isRed(node.left.right)) node.left = rotateLeft(node.left);
+            if (isRed(node.left.left))  node = rotateRight(node);
+        }
+        if (isRed(node.right)) {    // re-balance right skewed 4-nodes
+            if (isRed(node.right.left))  node.right = rotateRight(node.right);
+            if (isRed(node.right.right)) node = rotateLeft(node);
+        }
 
         node.N = size(node.left) + size(node.right) + 1;    // set node counter
         return node;    // return link to current root
@@ -194,19 +191,19 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
 
     @Override
     public Value get(Key key) {
-        if (cache != null && cache.key.compareTo(key) == 0) return cache.value;
         Node cur = root;
         while (cur != null) {
             int cmp = key.compareTo(cur.key);   // compare search key to current node's key
             if      (cmp < 0) cur = cur.left;   // if less, turn to left subtree
             else if (cmp > 0) cur = cur.right;  // if more, turn to right subtree
-            else { cache = cur; return cur.value; }// if hit, return search result
+            else              return cur.value; // if hit, return search result
         }
         return null;    // if miss, return null
     }
 
-    public static void main(String[] args) {
-        LLRedBlackBST<String, Integer> st = new LLRedBlackBST<>();
+    public static void main(String[] args)
+    {
+        TTFBST<String, Integer> st = new TTFBST<>();
         Scanner scanner = new Scanner(System.in);
         for (int i = 0; scanner.hasNext(); i++) {
             String key = scanner.next();
@@ -220,12 +217,12 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         System.out.println("ceiling D: " + st.ceiling("D"));
         System.out.println("rank N   : " + st.rank("N"));
         System.out.println("select 4 : " + st.select(4));
-        st.draw();
         /*st.deleteMin();
         st.deleteMax();
         st.delete("L");
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));*/
+        st.draw();
     }
 
     // below is draw method
