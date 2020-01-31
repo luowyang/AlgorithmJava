@@ -14,6 +14,8 @@ public class FrequencyCounter {
                 return new BinarySearchST<>();
             case "BST":
                 return new BST<>();
+            case "LLRB":
+                return new LLRedBlackBST<>();
             default:
                 throw new IllegalArgumentException("Unknown algorithm " + alg);
         }

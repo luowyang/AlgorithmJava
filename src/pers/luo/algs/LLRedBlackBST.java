@@ -1,8 +1,14 @@
 package pers.luo.algs;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+
 public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
     private static final boolean RED   = true;
     private static final boolean BLACK = false;
+
+    private Node root;
 
     private class Node {
         Key key;            // key
@@ -66,59 +72,145 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
 
     @Override
     public Key min() {
-        return null;
+        if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
+        Node cur = root;
+        while (cur.left != null) cur = cur.left;
+        return cur.key;
     }
 
     @Override
     public Key max() {
-        return null;
+        if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
+        Node cur = root;
+        while (cur.right != null) cur = cur.right;
+        return cur.key;
     }
 
     @Override
     public Key floor(Key key) {
-        return null;
+        Key candidate = null;
+        Node cur = root;
+        while (cur != null) {
+            int cmp = key.compareTo(cur.key);
+            if      (cmp < 0) { cur = cur.left;                       }
+            else if (cmp > 0) { candidate = cur.key; cur = cur.right; }
+            else              { return cur.key;                       }
+        }
+        return candidate;
     }
 
     @Override
     public Key ceiling(Key key) {
-        return null;
+        Key candidate = null;
+        Node cur = root;
+        while (cur != null) {
+            int cmp = key.compareTo(cur.key);
+            if      (cmp > 0) { cur = cur.right;                     }
+            else if (cmp < 0) { candidate = cur.key; cur = cur.left; }
+            else              { return cur.key;                      }
+        }
+        return candidate;
     }
 
     @Override
     public int rank(Key key) {
-        return 0;
+        Node cur = root;
+        int r = 0;          // r stores # of known nodes less than key
+        while (cur != null) {
+            int cmp = key.compareTo(cur.key);
+            if      (cmp < 0) { cur = cur.left;                           }
+            else if (cmp > 0) { r += size(cur.left) + 1; cur = cur.right; }
+            else              { return r + size(cur.left); }
+        }
+        return r;
     }
 
     @Override
     public Key select(int k) {
-        return null;
-    }
-
-    @Override
-    public int size(Key lo, Key hi) {
-        return 0;
-    }
-
-    @Override
-    public Iterable<Key> keys(Key lo, Key hi) {
-        return null;
-    }
-
-    @Override
-    public void put(Key key, Value value) {
-
-    }
-
-    @Override
-    public Value get(Key key) {
-        return null;
+        Node cur = root;
+        while (cur != null) {
+            int t = size(cur.left); // get left subtree size
+            if      (t > k) { cur = cur.left;              }
+            else if (t < k) { k -= t + 1; cur = cur.right; }
+            else            { return cur.key;              }
+        }
+        return null;    // will trigger only if k is out of bound
     }
 
     @Override
     public int size() {
-        return 0;
+        return size(root);
     }
 
+    @Override
+    public Iterable<Key> keys(Key lo, Key hi) {
+        Queue<Key> queue = new Queue<>();
+        keys(root, queue, lo, hi);
+        return queue;
+    }
+    private void keys(Node node, Queue<Key> queue, Key lo, Key hi) {
+        if (node == null) return;   // basic case
+        int cmplo = lo.compareTo(node.key);
+        int cmphi = hi.compareTo(node.key);
+        if (cmplo < 0) keys(node.left, queue, lo, hi);
+        if (cmplo <= 0 && cmphi >= 0) queue.enqueue(node.key);
+        if (cmphi > 0) keys(node.right, queue, lo, hi);
+    }
 
+    @Override
+    public void put(Key key, Value value) {
+        root = put(root, key, value);   // recursive insert on root, return new root
+        root.color = BLACK;             // root color is always BLACK (root is pointed by null link)
+    }
+    // recursively insert new node and adjust parents
+    // return link to the root after insertion
+    private Node put(Node node, Key key, Value value) {
+        if (node == null) return new Node(key, value, 1, RED);  // new node is inserted if miss and is always RED
+        int cmp = key.compareTo(node.key);  // compare searching key to current node's key
+        if      (cmp < 0) node.left = put(node.left, key, value);   // if less, turn to left subtree
+        else if (cmp > 0) node.right = put(node.right, key, value); // if more, turn to right subtree
+        else              node.value = value;                       // if hit, change current value
+        // now we should check red black properties
+        if (!isRed(node.left) && isRed(node.right))    node = rotateLeft(node);     // repair right leaning RED link
+        if (isRed(node.left) && isRed(node.left.left)) node = rotateRight(node);    // repair left skewed 4-node
+        if (isRed(node.left) && isRed(node.right))     flipColors(node);            // decompose balanced 4-node
 
+        node.N = size(node.left) + size(node.right) + 1;    // set node counter
+        return node;    // return link to current root
+    }
+
+    @Override
+    public Value get(Key key) {
+        Node cur = root;
+        while (cur != null) {
+            int cmp = key.compareTo(cur.key);   // compare search key to current node's key
+            if      (cmp < 0) cur = cur.left;   // if less, turn to left subtree
+            else if (cmp > 0) cur = cur.right;  // if more, turn to right subtree
+            else              return cur.value; // if hit, return search result
+        }
+        return null;    // if miss, return null
+    }
+
+    public static void main(String[] args)
+    {
+        LLRedBlackBST<String, Integer> st = new LLRedBlackBST<>();
+        Scanner scanner = new Scanner(System.in);
+        for (int i = 0; scanner.hasNext(); i++) {
+            String key = scanner.next();
+            st.put(key, i);
+        }
+        for (String s : st.keys())
+            System.out.println(s + " " + st.get(s));
+        System.out.println("min      : " + st.min());
+        System.out.println("max      : " + st.max());
+        System.out.println("floor D  : " + st.floor("D"));
+        System.out.println("ceiling D: " + st.ceiling("D"));
+        System.out.println("rank N   : " + st.rank("N"));
+        System.out.println("select 4 : " + st.select(4));
+        /*st.deleteMin();
+        st.deleteMax();
+        st.delete("L");
+        for (String s : st.keys())
+            System.out.println(s + " " + st.get(s));*/
+    }
 }

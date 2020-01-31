@@ -68,7 +68,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
     @Override
     public int rank(Key key) {
         Node cur = root;
-        int r = 0;
+        int r = 0;          // r stores # of known nodes less than key
         while (cur != null) {
             int cmp = cur.key.compareTo(key);
             if      (cmp > 0) { cur = cur.left;                           }
@@ -87,7 +87,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
             else if (t < k) { k -= t + 1; cur = cur.right; }
             else            { return cur.key;              }
         }
-        return null;
+        return null;    // will trigger only if k is out of bound
     }
 
     @Override
