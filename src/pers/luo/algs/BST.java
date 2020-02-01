@@ -17,14 +17,14 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         Value value;
         Node left;
         Node right;
-        int N;
+        int size;
         double xCoordinate, yCoordinate;
-        public Node(Key key, Value value, int N) {
+        public Node(Key key, Value value, int size) {
             this.key = key;
             this.value = value;
             this.left = null;
             this.right = null;
-            this.N = N;
+            this.size = size;
         }
     }
 
@@ -106,7 +106,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
             return node.right;
         }
         node.left = deleteMin(node.left);
-        node.N = size(node.left) + size(node.right) + 1;
+        node.size = size(node.left) + size(node.right) + 1;
         return node;
     }
 
@@ -121,7 +121,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
             return node.left;
         }
         node.right = deleteMin(node.right);
-        node.N = size(node.left) + size(node.right) + 1;
+        node.size = size(node.left) + size(node.right) + 1;
         return node;
     }
 
@@ -153,7 +153,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
                 node.right = cur.right;
             }
         }
-        node.N = size(node.left) + size(node.right) + 1;
+        node.size = size(node.left) + size(node.right) + 1;
         return node;
     }
 
@@ -191,7 +191,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         if      (cmp > 0) { node.left = put(node.left, key, value);        }
         else if (cmp < 0) { node.right = put(node.right, key, value);      }
         else              { cache = node; node.value = value; return node; }
-        node.N = size(node.left) + size(node.right) + 1;
+        node.size = size(node.left) + size(node.right) + 1;
         return node;
     }
 
@@ -214,7 +214,7 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
     }
 
     private int size(Node node) {
-        return node == null ? 0 : node.N;
+        return node == null ? 0 : node.size;
     }
 
     public static void main(String[] args)

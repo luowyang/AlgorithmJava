@@ -18,6 +18,8 @@ public class FrequencyCounter {
                 return new LLRedBlackBST<>();
             case "TTF":
                 return new TTFBST<>();
+            case "AVL":
+                return new AVLBST<>();
             default:
                 throw new IllegalArgumentException("Unknown algorithm " + alg);
         }

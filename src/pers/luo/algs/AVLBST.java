@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
     private Node root;
-    // private Node cache;
+    private Node cache;
 
     private int treeLevel;
 
@@ -15,22 +15,22 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         Key key;
         Value value;
         Node left, right;
-        int N;
+        int size;
         int height;
         double xCoordinate, yCoordinate;
-        public Node(Key key, Value value, int N, int height) {
+        public Node(Key key, Value value, int size, int height) {
             this.key = key;
             this.value = value;
             this.left = null;
             this.right = null;
-            this.N = N;
+            this.size = size;
             this.height = height;
         }
     }
 
     // helper to avoid judging null explicitly
     private int size(Node node) {
-        return node == null ? 0 : node.N;
+        return node == null ? 0 : node.size;
     }
 
     // helper to avoid judging null explicitly
@@ -47,8 +47,8 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         node.height = 1 + Math.max(height(node.left), height(node.right));
         x.height = 1 + Math.max(height(node), height(x.right));
         // set sizes
-        x.N = node.N;
-        node.N = size(node.left) + size(node.right) + 1;
+        x.size = node.size;
+        node.size = size(node.left) + size(node.right) + 1;
         return x;
     }
 
@@ -61,8 +61,8 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         node.height = 1 + Math.max(height(node.left), height(node.right));
         x.height = 1 + Math.max(height(node), height(x.left));
         // set sizes
-        x.N = node.N;
-        node.N = size(node.left) + size(node.right) + 1;
+        x.size = node.size;
+        node.size = size(node.left) + size(node.right) + 1;
         return x;
     }
 
@@ -133,7 +133,7 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
             int cmp = cur.key.compareTo(key);
             if      (cmp > 0) { cur = cur.left;                           }
             else if (cmp < 0) { r += size(cur.left) + 1; cur = cur.right; }
-            else              { return r + size(cur.left);   }
+            else              { cache = cur; return r + size(cur.left);   }
         }
         return r;
     }
@@ -145,29 +145,57 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
             int t = size(cur.left);
             if      (t > k) { cur = cur.left;              }
             else if (t < k) { k -= t + 1; cur = cur.right; }
-            else            {  return cur.key; }
+            else            { cache = cur; return cur.key; }
         }
         return null;    // will trigger only if k is out of bound
     }
 
     @Override
     public Iterable<Key> keys(Key lo, Key hi) {
-        return null;
+        Queue<Key> queue = new Queue<>();
+        keys(root, queue, lo, hi);
+        return queue;
+    }
+    private void keys(Node node, Queue<Key> queue, Key lo, Key hi) {
+        if (node == null) return;   // basic case
+        int cmplo = lo.compareTo(node.key);
+        int cmphi = hi.compareTo(node.key);
+        if (cmplo < 0) keys(node.left, queue, lo, hi);
+        if (cmplo <= 0 && cmphi >= 0) queue.enqueue(node.key);
+        if (cmphi > 0) keys(node.right, queue, lo, hi);
     }
 
     @Override
     public void put(Key key, Value value) {
-
+        if (cache != null && cache.key.compareTo(key) == 0) {
+            cache.value = value;
+            return;
+        }
+        root = put(root, key, value);
+    }
+    private Node put(Node node, Key key, Value value) {
+        if (node == null) {
+            cache = new Node(key, value, 1, 1);
+            return cache;
+        }
+        int cmp = key.compareTo(node.key);
+        if      (cmp < 0) node.left  = put(node.left, key, value);
+        else if (cmp > 0) node.right = put(node.right, key, value);
+        else              node.value = value;
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        node.size = 1 + size(node.left) + size(node.right);
+        return balance(node);
     }
 
     @Override
     public Value get(Key key) {
+        if (cache != null && cache.key.compareTo(key) == 0) return cache.value;
         Node cur = root;
         while (cur != null) {
             int cmp = cur.key.compareTo(key);
             if      (cmp > 0) cur = cur.left;
             else if (cmp < 0) cur = cur.right;
-            else { return cur.value; }
+            else { cache = cur; return cur.value; }
         }
         return null;
     }
@@ -184,7 +212,7 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
 
     public static void main(String[] args)
     {
-        BST<String, Integer> st = new BST<>();
+        AVLBST<String, Integer> st = new AVLBST<>();
         Scanner scanner = new Scanner(System.in);
         for (int i = 0; scanner.hasNext(); i++) {
             String key = scanner.next();

@@ -1,8 +1,8 @@
 package pers.luo.algs;
 
+import edu.princeton.cs.algs4.RedBlackBST;
 import edu.princeton.cs.algs4.StdDraw;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -19,13 +19,13 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         Key key;            // key
         Value value;        // value
         Node left, right;   // left and right subtree
-        int N;              // node counter
+        int size;           // node counter
         boolean color;      // color of the node and the link pointed to it
         double xCoordinate, yCoordinate;
-        public Node(Key key, Value value, int N, boolean color) {
+        public Node(Key key, Value value, int size, boolean color) {
             this.key   = key;
             this.value = value;
-            this.N     = N;
+            this.size = size;
             this.color = color;
         }
     }
@@ -39,7 +39,7 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
     // size of the subtree rooted by "node"
     private int size(Node node) {
         if (node == null) return 0;
-        return node.N;
+        return node.size;
     }
 
     // left rotation will rotate right child to the root
@@ -50,8 +50,8 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         x.left = node;          // now we can set x.left to point to node, and x becomes new root
         x.color = node.color;   // x is now pointed by the original parent of node, so set x's color to be node's
         node.color = RED;       // the original link from node to x is RED, so after rotation node is pointed by RED link
-        x.N = node.N;           // x is the current root so its counter should be the same as the original root "node"
-        node.N = size(node.left) + size(node.right) + 1;    // update node's counter with its children's counter
+        x.size = node.size;           // x is the current root so its counter should be the same as the original root "node"
+        node.size = size(node.left) + size(node.right) + 1;    // update node's counter with its children's counter
         return x;               // return the link to the current root x
     }
 
@@ -63,25 +63,127 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         x.right = node;         // now we can set x.left to point to node, and x becomes new root
         x.color = node.color;   // x is now pointed by the original parent of node, so set x's color to be node's
         node.color = RED;       // the original link from node to x is RED, so after rotation node is pointed by RED link
-        x.N = node.N;           // x is the current root so its counter should be the same as the original root "node"
-        node.N = size(node.left) + size(node.right) + 1;    // update node's counter with its children's counter
+        x.size = node.size;           // x is the current root so its counter should be the same as the original root "node"
+        node.size = size(node.left) + size(node.right) + 1;    // update node's counter with its children's counter
         return x;               // return the link to the current root x
     }
 
-    // flip colors of children from red to black, both children should be red
-    // also flip "node" to red to maintain black height, normally "node" is black
+    // flip colors of node and its children
+    // node must have the opposite color of its children
+    // while its two children must have the same color
     private void flipColors(Node node) {
-        node.color = RED;           // set node color to RED
-        node.left.color = BLACK;    // set left child color to BLACK
-        node.right.color = BLACK;   // set right child color to BLACK
+        node.color = !node.color;               // reverse node color
+        node.left.color = !node.left.color;     // reverse left child color
+        node.right.color = !node.right.color;   // reverse right child color
+    }
+
+    // if left child is a 2-node, a red link should be borrowed from parent or brother
+    // node must be red
+    private Node moveRedLeft(Node node) {
+        flipColors(node);   // whether right child is red or not, we shall flip color first
+        if (isRed(node.right.left)) {   // if right child is null, left child must be red
+            node.right = rotateRight(node.right);   // re-balance 5-node
+            node = rotateLeft(node);                // adjust key layout inside 5-node
+            flipColors(node);                       // divide 5-node
+        }
+        return node;
+    }
+
+    // if right child is a 2-node, a red link should be borrowed from parent or brother
+    // node must be red
+    private Node moveRedRight(Node node) {
+        flipColors(node);   // whether right child is red or not, we shall flip color first
+        if (isRed(node.left.left)) {
+            node = rotateLeft(node);                // adjust key layout inside 5-node
+            flipColors(node);                       // divide 5-node
+        }
+        return node;
+    }
+
+    // balance red black tree after deletion
+    private Node balance(Node node) {
+        if (isRed(node.right))                         node = rotateLeft(node);     // repair right leaning RED link
+        if (isRed(node.left) && isRed(node.left.left)) node = rotateRight(node);    // re-balance left skewed 4-node
+        if (isRed(node.left) && isRed(node.right))     flipColors(node);            // decompose balanced 4-node
+        node.size = size(node.left) + size(node.right) + 1;    // set node counter
+        return node;    // return link to current root
+    }
+
+    @Override
+    public void deleteMin() {
+        if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
+        if (!isRed(root.left) && !isRed(root.right))
+            root.color = RED;   // set the invariant
+        root = deleteMin(root);
+        if (!isEmpty()) root.color = BLACK; // reset root color to black
+    }
+    private Node deleteMin(Node node) {
+        if (node.left == null) return null; // delete if reach min
+        if (!isRed(node.left) && !isRed(node.left.left))    // if left child is a 2-node
+            node = moveRedLeft(node);   // change left child into non-2-node
+        node.left = deleteMin(node.left);
+        return balance(node);
+    }
+
+    @Override
+    public void deleteMax() {
+        if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
+        if (!isRed(root.left) && !isRed(root.right))
+            root.color = RED;   // set the invariant
+        root = deleteMax(root);
+        if (!isEmpty()) root.color = BLACK; // reset root color to black
+    }
+    private Node deleteMax(Node node) {
+        if (isRed(node.left)) node = rotateRight(node); // rotate red left link to right
+        if (node.right == null) return null; // delete if reach max
+        if (!isRed(node.right) && !isRed(node.right.left))    // if right child is a 2-node
+            node = moveRedRight(node);   // change right child into non-2-node
+        node.right = deleteMax(node.right);
+        return balance(node);
+    }
+
+    @Override
+    public void delete(Key key) {
+        if (key == null) throw new IllegalArgumentException("argument to delete() is null");
+        if (!contains(key)) return;
+        if (!isRed(root.left) && !isRed(root.right))
+            root.color = RED;
+        root = delete(root, key);
+        if (!isEmpty()) root.color = BLACK;
+    }
+    private Node delete(Node node, Key key) {
+        if (key.compareTo(node.key) < 0)  {
+            if (!isRed(node.left) && !isRed(node.left.left))
+                node = moveRedLeft(node);
+            node.left = delete(node.left, key);
+        }
+        else {
+            if (isRed(node.left))
+                node = rotateRight(node);
+            if (key.compareTo(node.key) == 0 && (node.right == null))
+                return null;
+            if (!isRed(node.right) && !isRed(node.right.left))
+                node = moveRedRight(node);
+            if (key.compareTo(node.key) == 0) {
+                Node x = min(node.right);
+                node.key = x.key;
+                node.value = x.value;
+                node.right = deleteMin(node.right);
+            }
+            else node.right = delete(node.right, key);
+        }
+        return balance(node);
     }
 
     @Override
     public Key min() {
         if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
-        Node cur = root;
-        while (cur.left != null) cur = cur.left;
-        return cur.key;
+        return min(root).key;
+    }
+    private Node min(Node node) {
+        if (node == null) return null;
+        while (node.left != null) node = node.left;
+        return node;
     }
 
     @Override
@@ -188,7 +290,7 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         if (isRed(node.left) && isRed(node.left.left)) node = rotateRight(node);    // re-balance left skewed 4-node
         if (isRed(node.left) && isRed(node.right))     flipColors(node);            // decompose balanced 4-node
 
-        node.N = size(node.left) + size(node.right) + 1;    // set node counter
+        node.size = size(node.left) + size(node.right) + 1;    // set node counter
         return node;    // return link to current root
     }
 
@@ -220,12 +322,12 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         System.out.println("ceiling D: " + st.ceiling("D"));
         System.out.println("rank N   : " + st.rank("N"));
         System.out.println("select 4 : " + st.select(4));
-        st.draw();
-        /*st.deleteMin();
+        st.deleteMin();
         st.deleteMax();
         st.delete("L");
         for (String s : st.keys())
-            System.out.println(s + " " + st.get(s));*/
+            System.out.println(s + " " + st.get(s));
+        st.draw();
     }
 
     // below is draw method
