@@ -2,6 +2,7 @@ package pers.luo.algs;
 
 import edu.princeton.cs.algs4.StdIn;
 
+import java.util.Comparator;
 import java.util.NoSuchElementException;
 
 /*
@@ -10,9 +11,16 @@ import java.util.NoSuchElementException;
 public class MaxPQ<Key extends Comparable<Key>> {
     private Key[] heap;
     private int N = 0;
+    private Comparator<Key> comparator;
 
     public MaxPQ()
     { heap = (Key[]) new Comparable[1]; }
+
+    public MaxPQ(Comparator<Key> comparator)
+    {
+        heap = (Key[]) new Comparable[1];
+        this.comparator = comparator;
+    }
 
     public MaxPQ(Key[] array)
     {
@@ -53,7 +61,7 @@ public class MaxPQ<Key extends Comparable<Key>> {
     private void swim(int k)
     {
         Key t = heap[k];
-        while (k > 0 && Util.less(heap[parent(k)], t)) {
+        while (k > 0 && Util.less(heap[parent(k)], t, comparator)) {
             heap[k] = heap[parent(k)];
             k = parent(k);
         }
@@ -65,8 +73,8 @@ public class MaxPQ<Key extends Comparable<Key>> {
         Key t = heap[k];
         while (left(k) < N) {
             int j = left(k);
-            if (j < N-1 && Util.less(heap[left(k)], heap[right(k)])) j++;
-            if (!Util.less(t, heap[j])) break;
+            if (j < N-1 && Util.less(heap[left(k)], heap[right(k)], comparator)) j++;
+            if (!Util.less(t, heap[j], comparator)) break;
             heap[k] = heap[j];
             k = j;
         }
