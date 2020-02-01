@@ -20,6 +20,10 @@ public class FrequencyCounter {
                 return new TTFBST<>();
             case "AVL":
                 return new AVLBST<>();
+            case "SCH":
+                return new SeparateChainingHashST<>();
+            case "LPH":
+                return new LinearProbingHashST<>(99997);
             default:
                 throw new IllegalArgumentException("Unknown algorithm " + alg);
         }
