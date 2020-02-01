@@ -86,17 +86,23 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
     @Override
     public Key min() {
         if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
-        Node cur = root;
-        while (cur.left != null) cur = cur.left;
-        return cur.key;
+        return min(root).key;
+    }
+    private Node min(Node node) {
+        if (node == null) return null;
+        while (node.left != null) node = node.left;
+        return node;
     }
 
     @Override
     public Key max() {
         if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
-        Node cur = root;
-        while (cur.right != null) cur = cur.right;
-        return cur.key;
+        return max(root).key;
+    }
+    private Node max(Node node) {
+        if (node == null) return null;
+        while (node.right != null) node = node.right;
+        return node;
     }
 
     @Override
@@ -201,8 +207,66 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
     }
 
     @Override
-    public void delete(Key key) {
+    public void deleteMin() {
+        if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
+        root = deleteMin(root);
+    }
+    // delete min from subtree rooted by node while maintaining AVL properties
+    private Node deleteMin(Node node) {
+        if (node.left == null) {
+            if (cache == node) cache = null;
+            return node.right;
+        }
+        node.left = deleteMin(node.left);
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        node.size = size(node.left) + size(node.right) + 1;
+        return balance(node);
+    }
 
+    @Override
+    public void deleteMax() {
+        if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
+        root = deleteMax(root);
+    }
+    // delete max from subtree rooted by node while maintaining AVL properties
+    private Node deleteMax(Node node) {
+        if (node.right == null){
+            if (cache == node) cache = null;
+            return node.left;
+        }
+        node.right = deleteMax(node.right);
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        node.size = size(node.left) + size(node.right) + 1;
+        return balance(node);
+    }
+
+    @Override
+    public void delete(Key key) {
+        if (key == null) throw new IllegalArgumentException("Argument of delete() cannot be null");
+        if (isEmpty()) return;
+        root = delete(root, key);
+    }
+    private Node delete(Node node, Key key) {
+        if (node == null) return null;
+        int cmp = key.compareTo(node.key);
+        if (cmp < 0) {
+            node.left = delete(node.left, key);
+        }
+        else if (cmp > 0) {
+            node.right = delete(node.right, key);
+        }
+        else {
+            if (cache == node) cache = null;
+            if (node.left == null) return node.right;
+            if (node.right == null) return node.left;
+            Node cur =  node;
+            node = min(cur.right);
+            node.right = deleteMin(cur.right);
+            node.left = cur.left;
+        }
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        node.size = size(node.left) + size(node.right) + 1;
+        return balance(node);
     }
 
     @Override
@@ -226,13 +290,14 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         System.out.println("ceiling D: " + st.ceiling("D"));
         System.out.println("rank N   : " + st.rank("N"));
         System.out.println("select 4 : " + st.select(4));
-        st.draw();
-        /*st.deleteMin();
+        // st.draw();
+        st.deleteMin();
         st.deleteMax();
-        st.delete("L");
+        st.delete("E");
+        st.delete("M");
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));
-        st.draw();*/
+        st.draw();
     }
 
 

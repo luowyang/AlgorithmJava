@@ -31,17 +31,23 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
     @Override
     public Key min() {
         if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
-        Node cur = root;
-        while (cur.left != null) cur = cur.left;
-        return cur.key;
+        return min(root).key;
+    }
+    private Node min(Node node) {
+        if (node == null) return null;
+        while (node.left != null) node = node.left;
+        return node;
     }
 
     @Override
     public Key max() {
         if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
-        Node cur = root;
-        while (cur.right != null) cur = cur.right;
-        return cur.key;
+        return max(root).key;
+    }
+    private Node max(Node node) {
+        if (node == null) return null;
+        while (node.right != null) node = node.right;
+        return node;
     }
 
     @Override
@@ -143,13 +149,13 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
             // randomly delete using predecessor or successor
             Node cur = node;
             if (StdRandom.uniform(2) == 0) {
-                for (node = node.right; node.left != null; node = node.left) ;
+                node = min(cur.right);
                 node.right = deleteMin(cur.right);
                 node.left = cur.left;
             }
             else {
-                for (node = node.left; node.right != null; node = node.right) ;
-                node.left = deleteMin(cur.left);
+                node = max(cur.left);
+                node.left = deleteMax(cur.left);
                 node.right = cur.right;
             }
         }
@@ -233,13 +239,15 @@ public class BST<Key extends Comparable<Key>, Value> implements OrderedST<Key, V
         System.out.println("ceiling D: " + st.ceiling("D"));
         System.out.println("rank N   : " + st.rank("N"));
         System.out.println("select 4 : " + st.select(4));
-        st.draw();
-        /*st.deleteMin();
+//        st.draw();
+        st.deleteMin();
         st.deleteMax();
-        st.delete("L");
+//        st.draw();
+        st.delete("E");
+        st.delete("M");
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));
-        st.draw();*/
+        st.draw();
     }
 
 

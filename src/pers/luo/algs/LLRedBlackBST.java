@@ -118,7 +118,10 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         if (!isEmpty()) root.color = BLACK; // reset root color to black
     }
     private Node deleteMin(Node node) {
-        if (node.left == null) return null; // delete if reach min
+        if (node.left == null) {
+            if (cache == node) cache = null;
+            return null; // delete if reach min
+        }
         if (!isRed(node.left) && !isRed(node.left.left))    // if left child is a 2-node
             node = moveRedLeft(node);   // change left child into non-2-node
         node.left = deleteMin(node.left);
@@ -134,7 +137,10 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         if (!isEmpty()) root.color = BLACK; // reset root color to black
     }
     private Node deleteMax(Node node) {
-        if (isRed(node.left)) node = rotateRight(node); // rotate red left link to right
+        if (isRed(node.left)) {
+            if (cache == node) cache = null;
+            node = rotateRight(node); // rotate red left link to right
+        }
         if (node.right == null) return null; // delete if reach max
         if (!isRed(node.right) && !isRed(node.right.left))    // if right child is a 2-node
             node = moveRedRight(node);   // change right child into non-2-node
@@ -165,6 +171,7 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
             if (!isRed(node.right) && !isRed(node.right.left))
                 node = moveRedRight(node);
             if (key.compareTo(node.key) == 0) {
+                if (cache == node) cache = null;
                 Node x = min(node.right);
                 node.key = x.key;
                 node.value = x.value;
@@ -324,7 +331,8 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         System.out.println("select 4 : " + st.select(4));
         st.deleteMin();
         st.deleteMax();
-        st.delete("L");
+        st.delete("E");
+        st.delete("M");
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));
         st.draw();
