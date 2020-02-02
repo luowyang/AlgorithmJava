@@ -41,6 +41,7 @@ public class HashSet<Key> {
     }
 
     public void add(Key key) {
+        if (key == null) throw new IllegalArgumentException("Key must not be null");
         if (M < 2 * size) resize(2 * M);
         int i = hash(key);
         while (keys[i] != null && !keys[i].equals(key))
@@ -51,6 +52,7 @@ public class HashSet<Key> {
     }
 
     public void delete(Key key) {
+        if (key == null) throw new IllegalArgumentException("Key must not be null");
         int i = hash(key);
         while (keys[i] != null && !keys[i].equals(key))
             if (++i == M) i = 0;
@@ -91,6 +93,13 @@ public class HashSet<Key> {
         for (int i = 0; i < M; i++)
             if (keys[i] != null) s = s + keys[i] + "\n";
         return s;
+    }
+
+    public Iterable<Key> keys() {
+        Queue<Key> queue = new Queue<>();
+        for (int i = 0; i < M; i++)
+            if (keys[i] != null) queue.enqueue(keys[i]);
+        return queue;
     }
 
     public static void main(String[] args)

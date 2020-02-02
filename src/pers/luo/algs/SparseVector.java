@@ -2,6 +2,7 @@ package pers.luo.algs;
 
 public class SparseVector {
     private SeparateChainingHashST<Integer, Double> st;
+    private final double PRECISION = 1e-20;
 
     public SparseVector() {
         this(null);
@@ -11,7 +12,7 @@ public class SparseVector {
         st = new SeparateChainingHashST<>();
         if (x == null) return;
         for (int i = 0; i < x.length; i++)
-            if (x[i] != 0.0) st.put(i, x[i]);
+            if (Math.abs(x[i]) >= PRECISION) st.put(i, x[i]);
     }
 
     public int size() {
@@ -35,6 +36,14 @@ public class SparseVector {
     }
 
     public SparseVector sum(SparseVector that) {
-        
+        //SparseVector sum = new SparseVector();
+        for (int k : that.st.keys()) {
+            double a = st.contains(k) ? st.get(k) : 0.0;
+            double b = that.st.get(k);
+            double c = a + b;
+            if (c >= PRECISION) st.put(k, c);
+            else                st.delete(k);
+        }
+        return this;
     }
 }

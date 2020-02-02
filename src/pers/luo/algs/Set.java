@@ -1,7 +1,5 @@
 package pers.luo.algs;
 
-import edu.princeton.cs.algs4.StdDraw;
-
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
