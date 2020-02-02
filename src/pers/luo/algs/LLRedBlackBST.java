@@ -50,7 +50,7 @@ public class LLRedBlackBST<Key extends Comparable<Key>, Value> implements Ordere
         x.left = node;          // now we can set x.left to point to node, and x becomes new root
         x.color = node.color;   // x is now pointed by the original parent of node, so set x's color to be node's
         node.color = RED;       // the original link from node to x is RED, so after rotation node is pointed by RED link
-        x.size = node.size;           // x is the current root so its counter should be the same as the original root "node"
+        x.size = node.size;     // x is the current root so its counter should be the same as the original root "node"
         node.size = size(node.left) + size(node.right) + 1;    // update node's counter with its children's counter
         return x;               // return the link to the current root x
     }

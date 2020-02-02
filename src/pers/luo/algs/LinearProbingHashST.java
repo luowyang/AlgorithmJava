@@ -52,7 +52,7 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
 
     @Override
     public void put(Key key, Value value) {
-        if (occupied >= M / 2) resize(M*2);
+        if (2 * occupied >= M) resize(M*2);
         if (cache >= 0 && keys[cache].equals(key)) {
             values[cache] = value;
             return;
@@ -98,7 +98,7 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
         values[i] = null;
         size--;
         cache = -1;
-        if (size > 0 && size <= M / 8) resize(M/2);
+        if (size > 0 && 8 * size <= M) resize(M/2);
     }
 
     @Override
