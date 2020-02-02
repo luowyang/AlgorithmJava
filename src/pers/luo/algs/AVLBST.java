@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
     private Node root;
-    private Node cache;
+    private Node cache; // software caching
 
     private int treeLevel;
 
@@ -85,7 +85,7 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
 
     @Override
     public Key min() {
-        if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
+        if (isEmpty()) return null;
         return min(root).key;
     }
     private Node min(Node node) {
@@ -96,7 +96,7 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
 
     @Override
     public Key max() {
-        if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
+        if (isEmpty()) return null;
         return max(root).key;
     }
     private Node max(Node node) {

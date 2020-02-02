@@ -7,41 +7,43 @@ import java.util.Scanner;
 public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
     private Key[] keys;     // array of keys
     private Value[] values; // array of values
-    private int N;          // # of key-value pairs
+    private int size;       // # of key-value pairs
     private int M;          // # of lists
     private int logM;
-    private final int[] primes;
-    private final int[] deltas = {1,3,1,5,3,3,9,3,1,3,19,15,1,5,1,3,9,3,15,3,39,5,39,57,3,35,1};
+    private int occupied;
 
-    private int collision = 0;
+    //private int cache = -1;  // software caching, cannot be null or dead pair
+
+    private final int[] primes = {
+            1, 1, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039, 4093, 8191, 16381,
+            32749, 65521, 131071, 262139, 524287, 1048573, 2097143, 4194301,
+            8388593, 16777213, 33554393, 67108859, 134217689, 268435399,
+            536870909, 1073741789, 2147483647
+    };
 
     private int hash(Key key) { // must mask sign bit so as not to get negative hash
         int t = key.hashCode() & 0x7fffffff;
-        if (logM < 26) t = t % primes[logM];
+        if (logM < 26) t = t % primes[logM + 5];
         return t % M;
     }
 
     private void resize(int capacity) {
         LinearProbingHashST<Key, Value> t = new LinearProbingHashST<>(capacity);
         for (int i = 0; i < M; i++)
-            if (keys[i] != null) t.put(keys[i], values[i]);
+            if (values[i] != null) t.put(keys[i], values[i]); // rehash
         M = t.M;
         logM = t.logM;
+        occupied = t.occupied;
         keys = t.keys;
         values = t.values;
+        //cache = -1;
     }
 
     public LinearProbingHashST(int M) {
         this.M = M;
-        this.logM = (int) Math.log(M);
+        this.logM = (int) (Math.log(M) / Math.log(2));
         keys   = (Key[])   new Object[M];
         values = (Value[]) new Object[M];
-        primes = new int[deltas.length];
-        int i = 32;
-        for (int k = 0; k < deltas.length; k++) {
-            primes[k] = i - deltas[k];
-            i = i << 1;
-        }
     }
 
     public LinearProbingHashST() {
@@ -50,56 +52,53 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
 
     @Override
     public void put(Key key, Value value) {
-        if (N >= M / 2) resize(M*2);
+        if (occupied >= M / 2) resize(M*2);
+        /*if (cache >= 0 && keys[cache].equals(key)) {
+            values[cache] = value;
+            return;
+        }*/
         int i = hash(key);
         while (keys[i] != null && !key.equals(keys[i])) {   // linear probing
             i++;
             if (i == M) i = 0;
-            collision++;
         }
+        if (values[i] == null) size++;
         values[i] = value;
         if (keys[i] == null) {
             keys[i] = key;
-            N++;
+            occupied++;
         }
     }
 
     @Override
     public Value get(Key key) {
+        //if (cache >= 0 && keys[cache].equals(key)) return values[cache];
         int i = hash(key);
         while (keys[i] != null && !key.equals(keys[i])) {   // linear probing
             i++;
             if (i == M) i = 0;
         }
-        if (keys[i] == null) return null;
+        //if (values[i] != null) cache = i;
         return values[i];
     }
 
     @Override
     public int size() {
-        return N;
+        return size;
     }
 
     @Override
     public void delete(Key key) {
-        int hash = hash(key);
-        int i = hash;
-        while (keys[i] != null && !keys[i].equals(key)) i = (i + 1) % M;
-        if (keys[i] == null) return;
-        keys[i] = null;
-        values[i] = null;
-        i = (i + 1) % M;
-        while (keys[++i] != null) {
-            Key keyToReDo = keys[i];
-            Value valueToReDo = values[i];
-            keys[i] = null;
-            values[i] = null;
-            N--;
-            put(keyToReDo, valueToReDo);
-            i = (i + 1) % M;
+        int i = hash(key);
+        while (keys[i] != null && !keys[i].equals(key)) {
+            i++;
+            if (i == M) i = 0;
         }
-        N--;
-        if (N > 0 && N <= M / 8) resize(M/2);
+        if (values[i] == null) return;
+        values[i] = null;
+        size--;
+        //cache = -1;
+        if (size > 0 && size <= M / 8) resize(M/2);
     }
 
     @Override
@@ -117,18 +116,18 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
             setIndex();
         }
         public boolean hasNext() {
-            return count < N;
+            return count < size;
         }
         public Key next() {
             Key key = keys[i];
             i++;
             count++;
-            if (count < N) setIndex();
+            if (count < size) setIndex();
             return key;
         }
         private void setIndex() { // set cur to next non-empty slot if cur is null
             if (i == M) i = 0;
-            while (keys[i] == null) {
+            while (values[i] == null) {
                 i++;
                 if (i == M) i = 0;
             }
@@ -137,7 +136,7 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
 
     public static void main(String[] args)
     {
-        LinearProbingHashST<String, Integer> st = new LinearProbingHashST<>();
+        LinearProbingHashST<String, Integer> st = new LinearProbingHashST<>(37);
         Scanner scanner = new Scanner(System.in);
         for (int i = 0; scanner.hasNext(); i++) {
             String key = scanner.next();
@@ -145,7 +144,6 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
         }
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));
-        System.out.println("Number of collisions: " + st.collision);
         System.out.println("Deletion test:");
         st.delete("E");
         st.delete("R");

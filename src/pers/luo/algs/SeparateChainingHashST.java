@@ -6,8 +6,17 @@ import java.util.Scanner;
 @SuppressWarnings("unchecked")
 public class SeparateChainingHashST<Key, Value> implements ST<Key, Value> {
     private Node<Key, Value>[] st;  // array of lists
-    private int N;      // # of key-value pairs
-    private int M;      // # of lists
+    private int size;                  // # of key-value pairs
+    private int M;                  // # of lists
+    private int alpha;              // acceptable average probing numbers
+    private int logM;
+
+    private final int[] primes = {
+            1, 1, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039, 4093, 8191, 16381,
+            32749, 65521, 131071, 262139, 524287, 1048573, 2097143, 4194301,
+            8388593, 16777213, 33554393, 67108859, 134217689, 268435399,
+            536870909, 1073741789, 2147483647
+    };
 
     private static class Node<Key, Value> {
         Key key;
@@ -20,39 +29,68 @@ public class SeparateChainingHashST<Key, Value> implements ST<Key, Value> {
         }
     }
 
-    private int hash(Key key) { // must mask sign bit so as not to get negative hash
-        return (key.hashCode() & 0x7fffffff) % M;
+    private void resize(int capacity) {
+        SeparateChainingHashST<Key, Value> t = new SeparateChainingHashST<>(capacity, alpha);
+        for (int i = 0; i < M; i++) {
+            Node<Key, Value> cur;
+            for (cur = st[i]; cur != null; cur = cur.next)
+                t.put(cur.key, cur.value); // rehash
+        }
+        M = t.M;
+        logM = t.logM;
+        st = t.st;
     }
 
-    public SeparateChainingHashST(int M) {
+    private int hash(Key key) {
+        int t = key.hashCode() & 0x7fffffff;    // must mask sign bit so as not to get negative hash
+        if (logM < 26) t = t % primes[logM + 5];
+        return t % M;
+    }
+
+    public SeparateChainingHashST(int M, int alpha) {
         this.M = M;
+        this.alpha = alpha;
+        this.logM = (int) (Math.log(M) / Math.log(2));
         st = (Node<Key, Value>[]) new Node[M];
     }
 
+    public SeparateChainingHashST(int M) {
+        this(M, 5);
+    }
+
     public SeparateChainingHashST() {
-        this(9997);
+        this(9997, 5);
     }
 
     @Override
     public void put(Key key, Value value) {
+        if (size / M > alpha) resize(2*M);
         int hash = hash(key);
         Node<Key, Value> cur = st[hash];
         while (cur != null && !cur.key.equals(key)) cur = cur.next;
         if (cur != null) { cur.value = value; return; }
-        st[hash] = new Node<Key, Value>(key, value, st[hash]);
-        N++;
+        st[hash] = new Node<>(key, value, st[hash]);
+        size++;
     }
 
     @Override
-    public Value get(Key key) {
-        Node<Key, Value> cur = st[hash(key)];
-        while (cur != null && !cur.key.equals(key)) cur = cur.next;
-        return cur == null ? null : cur.value;
+    public Value get(Key key) { // moving forward
+        int hash = hash(key);
+        Node<Key, Value> cur = st[hash];
+        if (cur == null) return null;
+        if (cur.key.equals(key)) return cur.value;
+        while (cur.next != null && !cur.next.key.equals(key)) cur = cur.next;
+        Node<Key, Value> node = cur.next;
+        if (node == null) return null;
+        cur.next = node.next;
+        node.next = st[hash];
+        st[hash] = node;
+        return st[hash].value;
     }
 
     @Override
     public int size() {
-        return N;
+        return size;
     }
 
     @Override
@@ -61,14 +99,15 @@ public class SeparateChainingHashST<Key, Value> implements ST<Key, Value> {
         if (st[hash] == null) return;
         if (st[hash].key.equals(key)) {
             st[hash] = st[hash].next;
-            N--;
-            return;
+            size--;
         }
-        Node<Key, Value> prev = st[hash];
-        while (prev.next != null && !prev.next.key.equals(key)) prev = prev.next;
-        if (prev.next != null) {
-            prev.next = prev.next.next;
-            N--;
+        else {
+            Node<Key, Value> prev = st[hash];
+            while (prev.next != null && !prev.next.key.equals(key)) prev = prev.next;
+            if (prev.next != null) {
+                prev.next = prev.next.next;
+                size--;
+            }
         }
     }
 
@@ -88,13 +127,13 @@ public class SeparateChainingHashST<Key, Value> implements ST<Key, Value> {
             setCur();
         }
         public boolean hasNext() {
-            return count < N;
+            return count < size;
         }
         public Key next() {
             Key key = cur.key;
             cur = cur.next;
             count++;
-            if (count < N) setCur();
+            if (count < size) setCur();
             return key;
         }
         private void setCur() { // set cur to next non-empty slot if cur is null
@@ -107,7 +146,7 @@ public class SeparateChainingHashST<Key, Value> implements ST<Key, Value> {
 
     public static void main(String[] args)
     {
-        SeparateChainingHashST<String, Integer> st = new SeparateChainingHashST<>();
+        SeparateChainingHashST<String, Integer> st = new SeparateChainingHashST<>(37);
         Scanner scanner = new Scanner(System.in);
         for (int i = 0; scanner.hasNext(); i++) {
             String key = scanner.next();

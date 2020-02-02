@@ -1,5 +1,6 @@
 package pers.luo.algs;
 
+import edu.princeton.cs.algs4.RedBlackBST;
 import javafx.scene.paint.Stop;
 
 import java.util.Scanner;
@@ -21,9 +22,11 @@ public class FrequencyCounter {
             case "AVL":
                 return new AVLBST<>();
             case "SCH":
-                return new SeparateChainingHashST<>();
+                return new SeparateChainingHashST<>(99997);
             case "LPH":
                 return new LinearProbingHashST<>(99997);
+            case "AVLSCH":
+                return new AVLSCHST<>(99997);
             default:
                 throw new IllegalArgumentException("Unknown algorithm " + alg);
         }
