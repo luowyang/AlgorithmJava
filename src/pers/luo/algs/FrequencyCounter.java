@@ -73,7 +73,7 @@ public class FrequencyCounter {
             String word = scanner.next();
             if (word.length() >= threshold) queue.enqueue(word);
         }
-        System.out.println("Read input in " + timer.elapsedTime() + " seconds");
+        System.out.println("Read " + queue.size() + " inputs in " + timer.elapsedTime() + " seconds");
         counter(queue, alg);
     }
 }

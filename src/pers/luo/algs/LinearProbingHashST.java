@@ -12,7 +12,7 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
     private int logM;
     private int occupied;
 
-    //private int cache = -1;  // software caching, cannot be null or dead pair
+    private int cache = -1;  // software caching, cannot be null or dead pair
 
     private final int[] primes = {
             1, 1, 3, 7, 13, 31, 61, 127, 251, 509, 1021, 2039, 4093, 8191, 16381,
@@ -36,7 +36,7 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
         occupied = t.occupied;
         keys = t.keys;
         values = t.values;
-        //cache = -1;
+        cache = -1;
     }
 
     public LinearProbingHashST(int M) {
@@ -53,10 +53,10 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
     @Override
     public void put(Key key, Value value) {
         if (occupied >= M / 2) resize(M*2);
-        /*if (cache >= 0 && keys[cache].equals(key)) {
+        if (cache >= 0 && keys[cache].equals(key)) {
             values[cache] = value;
             return;
-        }*/
+        }
         int i = hash(key);
         while (keys[i] != null && !key.equals(keys[i])) {   // linear probing
             i++;
@@ -72,13 +72,13 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
 
     @Override
     public Value get(Key key) {
-        //if (cache >= 0 && keys[cache].equals(key)) return values[cache];
+        if (cache >= 0 && keys[cache].equals(key)) return values[cache];
         int i = hash(key);
         while (keys[i] != null && !key.equals(keys[i])) {   // linear probing
             i++;
             if (i == M) i = 0;
         }
-        //if (values[i] != null) cache = i;
+        if (values[i] != null) cache = i;
         return values[i];
     }
 
@@ -97,7 +97,7 @@ public class LinearProbingHashST<Key, Value> implements ST<Key, Value> {
         if (values[i] == null) return;
         values[i] = null;
         size--;
-        //cache = -1;
+        cache = -1;
         if (size > 0 && size <= M / 8) resize(M/2);
     }
 
