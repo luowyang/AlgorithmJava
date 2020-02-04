@@ -46,6 +46,16 @@ public class BreadthFirstPaths {
         return path;
     }
 
+    public int distanceTo(int v) {        // calculate the length of shortest path
+        if (!hasPathTo(v)) return -1;     // this gatekeeper is necessary because edgeTo[] is initialized to 0's
+        int dist = 0;
+        while (v != s) {
+            v = edgeTo[v];
+            dist++;
+        }
+        return dist;
+    }
+
     public static void main(String[] args) {
         Graph G = new Graph(System.in);
         int s = Integer.parseInt(args[0]);
