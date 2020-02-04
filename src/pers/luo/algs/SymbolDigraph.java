@@ -5,12 +5,12 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Scanner;
 
-public class SymbolGraph {
+public class SymbolDigraph {
     private SeparateChainingHashST<String, Integer> st;
     private String[] keys;
-    private Graph G;
+    private Digraph G;
 
-    public SymbolGraph(InputStream in, String delimiter) {
+    public SymbolDigraph(InputStream in, String delimiter) {
         st = new SeparateChainingHashST<>();
         Scanner scanner = new Scanner(in);
         Queue<String> queue = new Queue<>();    // store input stream
@@ -27,12 +27,12 @@ public class SymbolGraph {
         for (String name: st.keys())
             keys[st.get(name)] = name;
         // second read
-        G = new Graph(st.size());
+        G = new Digraph(st.size());
         while (!queue.isEmpty()) {
             String[] a = queue.dequeue().split(delimiter);
             int v = st.get(a[0]);   // get the index of the first vertex of the line
-            for (int i = 1; i < a.length; i++)
-                G.addEdge(v, st.get(a[i])); // add edges for neighbouring vertices
+            for (String s : a)
+                G.addEdge(v, st.get(s)); // add edges for neighbouring vertices
         }
     }
 
@@ -50,7 +50,7 @@ public class SymbolGraph {
 
     // although G is private, client can manipulate G to change the symbol graph
     // this is OK because G only allows adding edges between existing vertices so symbol tables won't need to change
-    public Graph G() {
+    public Digraph G() {
         return G;
     }
 
@@ -58,10 +58,10 @@ public class SymbolGraph {
         String filename = args[0];
         String delimiter = args[1];
         String s = args[2];
-        SymbolGraph sg = new SymbolGraph(new FileInputStream(filename), delimiter);
+        SymbolDigraph sg = new SymbolDigraph(new FileInputStream(filename), delimiter);
 
-        Graph G = sg.G();
-        BreadthFirstPaths bfs = new BreadthFirstPaths(G, sg.index(s));
+        Digraph G = sg.G();
+        /*BreadthFirstPaths bfs = new BreadthFirstPaths(G, sg.index(s));
 
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -73,6 +73,6 @@ public class SymbolGraph {
             }
             else
                 System.out.println("   not connected");
-        }
+        }*/
     }
 }

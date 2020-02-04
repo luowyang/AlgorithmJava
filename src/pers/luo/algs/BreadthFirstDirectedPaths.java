@@ -1,35 +1,31 @@
 package pers.luo.algs;
 
-/*
- * find all shortest paths starting from vertex s in graph G
- * note that if multiple shortest paths exist for a vertex, only one will be returned
- * which one is chosen relies on graph representation
- */
-public class BreadthFirstPaths {
+public class BreadthFirstDirectedPaths {
     private boolean[] marked;
     private int[] edgeTo;
     private int[] distTo;
-    private final int s;
+    private int s;
 
-    public BreadthFirstPaths(Graph G, int s) {
-        this.s = s;
+    public BreadthFirstDirectedPaths(Digraph G, int s) {
+        if (s < 0 || s >= G.V()) throw new IllegalArgumentException("Source out of range");
         marked = new boolean[G.V()];
         edgeTo = new int[G.V()];
         distTo = new int[G.V()];
+        this.s = s;
         bfs(G, s);
     }
 
-    private void bfs(Graph G, int s) {
+    private void bfs(Digraph G, int s) {
         Queue<Integer> queue = new Queue<>();
+        marked[s] = true;
         edgeTo[s] = s;
         queue.enqueue(s);
-        marked[s] = true;
         while (!queue.isEmpty()) {
             int v = queue.dequeue();
             for (int w : G.adj(v))
                 if (!marked[w]) {
                     marked[w] = true;   // prevent multiple enqueuing
-                    edgeTo[w] = v;      // set last vertex of shortest path to w to be v
+                    edgeTo[w] = v;
                     distTo[w] = distTo[v] + 1;
                     queue.enqueue(w);
                 }
@@ -42,7 +38,7 @@ public class BreadthFirstPaths {
     }
 
     public Iterable<Integer> pathTo(int v) {
-        if (!hasPathTo(v)) return null;     // this gatekeeper is necessary because edgeTo[] is initialized to 0's
+        if (!hasPathTo(v)) return null;
         Stack<Integer> path = new Stack<>();
         for (int x = v; x != s; x = edgeTo[x])
             path.push(x);
@@ -50,15 +46,16 @@ public class BreadthFirstPaths {
         return path;
     }
 
-    public int distTo(int v) {        // calculate the length of shortest path
-        if (!hasPathTo(v)) return -1;     // this gatekeeper is necessary because edgeTo[] is initialized to 0's
+    public int distTo(int v) {
+        if (v < 0 || v >= marked.length) throw new IllegalArgumentException("Vertex out of range");
+        if (!hasPathTo(v)) return -1;
         return distTo[v];
     }
 
     public static void main(String[] args) {
-        Graph G = new Graph(System.in);
+        Digraph G = new Digraph(System.in);
         int s = Integer.parseInt(args[0]);
-        BreadthFirstPaths search = new BreadthFirstPaths(G, s);
+        BreadthFirstDirectedPaths search = new BreadthFirstDirectedPaths(G, s);
         for (int v = 0; v < G.V(); v++) {
             System.out.print(s + " to " + v + ": ");
             if (search.hasPathTo(v))

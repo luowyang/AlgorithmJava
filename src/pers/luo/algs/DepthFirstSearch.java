@@ -20,6 +20,7 @@ public class DepthFirstSearch {
     }
 
     public boolean marked(int v) {
+        if (v < 0 || v >= marked.length) throw new IllegalArgumentException("Vertex out of range");
         return marked[v];
     }
 
