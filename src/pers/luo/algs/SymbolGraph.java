@@ -69,7 +69,7 @@ public class SymbolGraph {
         while (scanner.hasNextLine()) {
             String query = scanner.nextLine();
             if (sg.contains(query) && bfs.hasPathTo(sg.index(query))) {
-                System.out.println("   (Degrees of Separation: " + bfs.distanceTo(sg.index(query))/2 + ")");
+                System.out.println("   (Degrees of Separation: " + bfs.distTo(sg.index(query))/2 + ")");
                 for (int w : bfs.pathTo(sg.index(query)))
                     System.out.println("   " + sg.name(w));
             }

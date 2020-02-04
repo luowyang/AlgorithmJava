@@ -33,6 +33,16 @@ public class Graph {
         }
     }
 
+    // copy constructor, deep copy
+    public Graph(Graph G) {
+        if (G == null) throw new IllegalArgumentException("Null argument for graph copy constructor");
+        V = G.V;
+        E = G.E;
+        adj = (Bag<Integer>[]) new Bag[V];
+        for (int v = 0; v < V; v++)
+            adj[v] = new Bag<>(G.adj[v]);   // copy-construct bags
+    }
+
     // # of vertices
     public int V() {
         return V;
@@ -50,6 +60,14 @@ public class Graph {
         E++;
     }
 
+    // return whether edge v-w exists
+    public boolean hasEdge(int v, int w) {
+        if (adj[v].size() > adj[w].size())
+            return adj[w].contains(v);
+        else
+            return adj[v].contains(w);
+    }
+
     // get all adjacent vertices of vertex v, sequence undefined
     // adj() method is the foundation of graph algorithms
     public Iterable<Integer> adj(int v) {
@@ -58,14 +76,14 @@ public class Graph {
 
     // adjacent lists representation of graph
     public String toString() {
-        String s = V + " vertices, " + E + " edges\n";
+        StringBuilder s = new StringBuilder(V + " vertices, " + E + " edges\n");
         for (int v = 0; v < V; v++) {
-            s += v + ": ";
+            s.append(v).append(": ");
             for (int w : this.adj(v))
-                s += w + " ";
-            s += "\n";
+                s.append(w).append(" ");
+            s.append("\n");
         }
-        return s;
+        return s.toString();
     }
 
     public static void main(String[] args) {

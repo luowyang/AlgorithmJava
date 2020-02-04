@@ -8,12 +8,14 @@ package pers.luo.algs;
 public class BreadthFirstPaths {
     private boolean[] marked;
     private int[] edgeTo;
+    private int[] distTo;
     private final int s;
 
     public BreadthFirstPaths(Graph G, int s) {
         this.s = s;
         marked = new boolean[G.V()];
         edgeTo = new int[G.V()];
+        distTo = new int[G.V()];
         bfs(G, s);
     }
 
@@ -27,6 +29,7 @@ public class BreadthFirstPaths {
             for (int w : G.adj(v))
                 if (!marked[w]) {
                     edgeTo[w] = v;      // set last vertex of shortest path to w to be v
+                    distTo[w] = distTo[v] + 1;
                     queue.enqueue(w);
                     marked[w] = true;   // prevent multiple enqueuing
                 }
@@ -46,14 +49,9 @@ public class BreadthFirstPaths {
         return path;
     }
 
-    public int distanceTo(int v) {        // calculate the length of shortest path
+    public int distTo(int v) {        // calculate the length of shortest path
         if (!hasPathTo(v)) return -1;     // this gatekeeper is necessary because edgeTo[] is initialized to 0's
-        int dist = 0;
-        while (v != s) {
-            v = edgeTo[v];
-            dist++;
-        }
-        return dist;
+        return distTo[v];
     }
 
     public static void main(String[] args) {
