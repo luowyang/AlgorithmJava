@@ -34,13 +34,13 @@ public class Graph {
     }
 
     // copy constructor, deep copy
-    public Graph(Graph G) {
-        if (G == null) throw new IllegalArgumentException("Null argument for graph copy constructor");
-        V = G.V;
-        E = G.E;
-        adj = (Bag<Integer>[]) new Bag[V];
+    public Graph(Graph that) {
+        if (that == null) throw new IllegalArgumentException("Null argument for graph copy constructor");
+        this.V = that.V;
+        this.E = that.E;
+        this.adj = (Bag<Integer>[]) new Bag[V];
         for (int v = 0; v < V; v++)
-            adj[v] = new Bag<>(G.adj[v]);   // copy-construct bags
+            this.adj[v] = new Bag<>(that.adj[v]);   // copy-construct bags
     }
 
     // # of vertices
@@ -55,13 +55,17 @@ public class Graph {
 
     // add an edge between vertices v and w
     public void addEdge(int v, int w) {
+        if (v < 0 || v >= V) throw new IllegalArgumentException("First vertex out of range");
+        if (w < 0 || w >= V) throw new IllegalArgumentException("Second vertex out of range");
         adj[v].add(w);
         adj[w].add(v);
         E++;
     }
 
-    // return whether edge v-w exists
+    // whether edge v-w exists
     public boolean hasEdge(int v, int w) {
+        if (v < 0 || v >= V) throw new IllegalArgumentException("First vertex out of range");
+        if (w < 0 || w >= V) throw new IllegalArgumentException("Second vertex out of range");
         if (adj[v].size() > adj[w].size())
             return adj[w].contains(v);
         else

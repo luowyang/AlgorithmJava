@@ -36,6 +36,15 @@ public class Digraph {
         }
     }
 
+    public Digraph(Digraph that) {
+        if (that == null) throw new IllegalArgumentException("Null argument for digraph copy constructor");
+        this.V = that.V;
+        this.E = that.V;
+        this.adj = (Bag<Integer>[]) new Bag[this.V];
+        for (int v = 0; v < this.V; v++)
+            this.adj[v] = new Bag<>(that.adj[v]);
+    }
+
     // return number of vertices
     public int V() {
         return V;
@@ -46,10 +55,24 @@ public class Digraph {
         return E;
     }
 
+    public int outDegree(int v) {
+        if (v < 0 || v >= V) throw new IllegalArgumentException("Vertex out of range");
+        return adj[v].size();
+    }
+
     // add a directed edge from vertices v to w
     public void addEdge(int v, int w) {
+        if (v < 0 || v >= V) throw new IllegalArgumentException("First vertex out of range");
+        if (w < 0 || w >= V) throw new IllegalArgumentException("Second vertex out of range");
         adj[v].add(w);  // only add the directed edge in v's adjacent list
         E++;
+    }
+
+    // whether edge v -> w exists
+    public boolean hasEDge(int v, int w) {
+        if (v < 0 || v >= V) throw new IllegalArgumentException("First vertex out of range");
+        if (w < 0 || w >= V) throw new IllegalArgumentException("Second vertex out of range");
+        return adj[v].contains(w);
     }
 
     // all adjacent vertices reachable from v
@@ -84,6 +107,7 @@ public class Digraph {
         System.out.println("Digraph:");
         System.out.println(G);
         System.out.println("Reverse digraph:");
-        System.out.println(G.reverse());
+        Digraph R = new Digraph(G.reverse());
+        System.out.println(R);
     }
 }
