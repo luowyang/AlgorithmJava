@@ -3,12 +3,12 @@ package pers.luo.algs;
 /*
 * Kosaraju algorithm for finding strongly connected components
 */
-public class SCC {
+public class KosarajuSCC {
     private boolean[] marked;
     private int[] id;           // id[v] is the identifier of SCC to which v belongs
     private int count;          // counter of SCCs, also identifier of SCCs when doing dfs
 
-    public SCC(Digraph G) {
+    public KosarajuSCC(Digraph G) {
         marked = new boolean[G.V()];
         id = new int[G.V()];
         DepthFirstOrder order = new DepthFirstOrder(G.reverse());
@@ -45,7 +45,7 @@ public class SCC {
 
     public static void main(String[] args) {
         Digraph G = new Digraph(System.in);
-        SCC scc = new SCC(G);
+        KosarajuSCC scc = new KosarajuSCC(G);
         for (int i = 0; i < scc.count; i++) {
             System.out.println("SCC id " + i + ":");
             for (int v = 0; v < G.V(); v++)
