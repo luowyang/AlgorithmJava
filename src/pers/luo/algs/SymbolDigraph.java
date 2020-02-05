@@ -31,8 +31,8 @@ public class SymbolDigraph {
         while (!queue.isEmpty()) {
             String[] a = queue.dequeue().split(delimiter);
             int v = st.get(a[0]);   // get the index of the first vertex of the line
-            for (String s : a)
-                G.addEdge(v, st.get(s)); // add edges for neighbouring vertices
+            for (int i = 1; i < a.length; i++)
+                G.addEdge(v, st.get(a[i])); // add edges for neighbouring vertices
         }
     }
 
