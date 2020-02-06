@@ -10,12 +10,11 @@ public class Degrees {
         inDegree = new int[G.V()];
         outDegree = new int[G.V()];
         for (int v = 0; v < G.V(); v++) {
+            for (int w : G.adj(v))
+                inDegree[w]++;
             outDegree[v] = G.outDegree(v);
             if (outDegree[v] != 1) isMap = false;
         }
-        Digraph R = G.reverse();
-        for (int v = 0; v < R.V(); v++)
-            inDegree[v] = R.outDegree(v);
     }
 
     public int inDegree(int v) {
