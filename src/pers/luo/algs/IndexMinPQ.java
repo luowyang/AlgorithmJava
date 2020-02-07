@@ -12,9 +12,9 @@ public class IndexMinPQ<Item extends Comparable<Item>> {
 
     public IndexMinPQ(int maxN)
     {
-        keys = (Item[]) new Comparable[maxN];
-        pos = new int[maxN];
-        heap = new int[maxN];
+        keys = (Item[]) new Comparable[maxN + 1];
+        pos = new int[maxN + 1];
+        heap = new int[maxN + 1];
     }
 
     public void insert(int index, Item item)
@@ -74,11 +74,11 @@ public class IndexMinPQ<Item extends Comparable<Item>> {
     { return N; }
 
     private final int parent(int k)
-    { return (k - 1) >> 1; }
+    { return (k - 1) / 2; }
     private final int left(int k)
-    { return (k << 1) + 1; }
+    { return (k * 2) + 1; }
     private final int right(int k)
-    { return (k + 1) << 1; }
+    { return (k + 1) * 2; }
 
     private void sink(int k)
     {

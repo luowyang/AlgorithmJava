@@ -1,35 +1,30 @@
 package pers.luo.algs;
 
-import edu.princeton.cs.algs4.StdIn;
-
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-/*
-* Max priority queue with resizing array and generic type
-*/
 @SuppressWarnings("unchecked")
-public class MaxPQ<Key extends Comparable<Key>> {
+public class MinPQ<Key extends Comparable<Key>> {
     private Key[] heap;
     private int N = 0;
     private Comparator<Key> comparator;
 
-    public MaxPQ(int capacity) {
+    public MinPQ(int capacity) {
         heap = (Key[]) new Comparable[capacity + 1];
     }
 
-    public MaxPQ() {
+    public MinPQ() {
         this(1);
     }
 
-    public MaxPQ(Comparator<Key> comparator)
+    public MinPQ(Comparator<Key> comparator)
     {
         this(1);
         this.comparator = comparator;
     }
 
-    public MaxPQ(Key[] array)
+    public MinPQ(Key[] array)
     {
         if (array == null || array.length == 0) throw new RuntimeException("Null or empty array");
         int sz = 1;
@@ -62,7 +57,7 @@ public class MaxPQ<Key extends Comparable<Key>> {
     private void swim(int k)
     {
         Key t = heap[k];
-        while (k > 0 && Util.less(heap[parent(k)], t, comparator)) {
+        while (k > 0 && Util.less(t, heap[parent(k)], comparator)) {
             heap[k] = heap[parent(k)];
             k = parent(k);
         }
@@ -74,8 +69,8 @@ public class MaxPQ<Key extends Comparable<Key>> {
         Key t = heap[k];
         while (left(k) < N) {
             int j = left(k);
-            if (j < N-1 && Util.less(heap[left(k)], heap[right(k)], comparator)) j++;
-            if (!Util.less(t, heap[j], comparator)) break;
+            if (j < N-1 && Util.less(heap[right(k)], heap[left(k)], comparator)) j++;
+            if (!Util.less(heap[j], t, comparator)) break;
             heap[k] = heap[j];
             k = j;
         }
@@ -89,15 +84,15 @@ public class MaxPQ<Key extends Comparable<Key>> {
         swim(N-1);
     }
 
-    public Key delMax()
+    public Key delMin()
     {
         if (N == 0) throw new NoSuchElementException("Heap underflow");
-        Key max = heap[0];
+        Key min = heap[0];
         heap[0] = heap[--N];
         heap[N] = null; // eliminate obsolete object
         sink(0);
         if (N > 0 && N == (heap.length-1)/4) resize(heap.length/2);
-        return max;
+        return min;
     }
 
     public boolean isEmpty()
@@ -108,11 +103,11 @@ public class MaxPQ<Key extends Comparable<Key>> {
 
     public static void main(String[] args)
     {
-        MaxPQ<String> pq = new MaxPQ<>();
+        MinPQ<String> pq = new MinPQ<>();
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNext()) {
             String s = scanner.next();
-            if (s.equals("*")) System.out.print(pq.delMax() + " ");
+            if (s.equals("*")) System.out.print(pq.delMin() + " ");
             else               pq.insert(s);
         }
         System.out.println("");
