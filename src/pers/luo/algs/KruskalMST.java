@@ -1,10 +1,16 @@
 package pers.luo.algs;
 
+/*
+ * Kruskal minimum spanning tree algorithm
+ */
 public class KruskalMST implements MST {
-    private Queue<Edge> mst;
+    private Queue<Edge> mst;    // edges of MST
+
+    private double weight;      // total weight of MST
 
     public KruskalMST(EdgeWeightedGraph G) {
         mst = new Queue<>();
+        weight = 0.0;
         UnionFind uf = new UnionFind(G.V());    // maintain a list of tree identities (to which tree a vertex belong)
         MinPQ<Edge> pq = new MinPQ<>(G.E());
         for (Edge e : G.edges()) pq.insert(e);  // initially PQ contains all edges
@@ -17,6 +23,7 @@ public class KruskalMST implements MST {
             if (uf.connected(v, w)) continue;
             mst.enqueue(e);     // add e to MST
             uf.union(v, w);     // v and w now belong to the same tree
+            weight += e.weight();
         }
     }
 
@@ -27,8 +34,6 @@ public class KruskalMST implements MST {
 
     @Override
     public double weight() {
-        double weight = 0.0;
-        for (Edge e : mst) weight += e.weight();
         return weight;
     }
 

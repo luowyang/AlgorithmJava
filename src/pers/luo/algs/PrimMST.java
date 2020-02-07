@@ -11,10 +11,13 @@ public class PrimMST implements MST {
     private double[]  distTo;       // distTo[v] = edgeTo[v].weight()
     private IndexMinPQ<Double> pq;  // possible min valid crossing edges
 
+    private double weight;          // total weight of MST
+
     public PrimMST(EdgeWeightedGraph G) {
         marked = new boolean[G.V()];
         edgeTo = new Edge[G.V()];
         distTo = new double[G.V()];
+        weight = 0.0;
         for (int v = 0; v < G.V(); v++)
             distTo[v] = Double.POSITIVE_INFINITY;   // initially there is no known min edges to MST
         pq = new IndexMinPQ<>(G.V());
@@ -25,13 +28,15 @@ public class PrimMST implements MST {
     private void prim(EdgeWeightedGraph G, int s) {
         distTo[s] = 0.0;                // s is the root of MST
         pq.insert(s, 0.0);        // initialize PQ with s
-        while (!pq.isEmpty())           // PQ stores the possible min valid crossing edges and will only become empty when done
+        while (!pq.isEmpty()) {         // PQ stores the possible min valid crossing edges and will only become empty when done
+            weight += pq.min();         // update weight
             visit(G, pq.delMin());      // visit closest vertex
+        }
     }
 
     // mark v and update min edges
     private void visit(EdgeWeightedGraph G, int v) {
-        marked[v] = true;           // mark v as being in MST
+        marked[v] = true;                   // mark v as being in MST
         for (Edge e : G.adj(v)) {
             int w = e.other(v);
             if (marked[w]) continue;        // omit e if v-w is not crossing edge
@@ -54,8 +59,6 @@ public class PrimMST implements MST {
 
     @Override
     public double weight() {
-        double weight = 0.0;
-        for (Edge e : edges()) weight += e.weight();
         return weight;
     }
 
