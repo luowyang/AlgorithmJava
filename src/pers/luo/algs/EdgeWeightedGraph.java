@@ -47,10 +47,9 @@ public class EdgeWeightedGraph {
 
     // add new edge v-w with weight
     public void addEdge(int v, int w, double weight) {
-        Edge e = new Edge(v, w, weight);    // create new edge
-        adj[v].add(e);                      // add new edge to v's adjacent list
-        adj[w].add(e);                      // add new edge to w's adjacent list
-        E++;                                // increment edge counter
+        if (v < 0 || v >= V) throw new IllegalArgumentException("First vertex out of range");
+        if (w < 0 || w >= V) throw new IllegalArgumentException("Second vertex out of range");
+        addEdge(new Edge(v, w, weight));
     }
 
     // add edge e
@@ -64,6 +63,7 @@ public class EdgeWeightedGraph {
 
     // iterate on adjacent list
     public Iterable<Edge> adj(int v) {
+        if (v < 0 || v >= V) throw new IllegalArgumentException("Vertex out of range");
         return adj[v];
     }
 
@@ -72,7 +72,7 @@ public class EdgeWeightedGraph {
         Bag<Edge> edges = new Bag<>();
         for (int v = 0; v < V; v++)
             for (Edge e : adj[v])
-                if (e.other(v) > v) edges.add(e);   // omit self-loop
+                if (e.other(v) > v) edges.add(e);   // omit self-loop, only add edge once
         return edges;
     }
 

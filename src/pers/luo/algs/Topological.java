@@ -14,6 +14,14 @@ public class Topological {
         }
     }
 
+    public Topological(EdgeWeightedDigraph G) {
+        DirectedCycle cycleFinder = new DirectedCycle(G);
+        if (!cycleFinder.hasCycle()) {  // topological order is only possible for DAG
+            DepthFirstOrder dfs = new DepthFirstOrder(G);
+            order = dfs.reversePost();  // topological order is exactly reverse post order
+        }
+    }
+
     // whether G is Directed Acyclic Graph
     public boolean isDAG() {
         return order != null;

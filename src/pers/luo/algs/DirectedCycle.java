@@ -33,6 +33,34 @@ public class DirectedCycle {
         onStack[v] = false; // finish recursion call so clear v from stack
     }
 
+    public DirectedCycle(EdgeWeightedDigraph G) {
+        marked = new boolean[G.V()];
+        onStack = new boolean[G.V()];
+        edgeTo = new int[G.V()];
+        for (int s = 0; s < G.V(); s++)
+            if (!marked[s]) dfs(G, s);  // look for directed cycle in every connected components
+    }
+
+    private void dfs(EdgeWeightedDigraph G, int v) {
+        marked[v] = true;
+        onStack[v] = true;      // begin recursion call so push v into stack
+        for (DirectedEdge e : G.adj(v)) {
+            int w = e.to();
+            if (hasCycle()) break;      // if already has a cycle, finish work
+            else if (!marked[w]) {      // deal with unvisited vertex
+                edgeTo[w] = v;
+                dfs(G, w);
+            } else if (onStack[w]) {      // deal with vertices on stack, which indicate a cycle
+                cycle = new Stack<>();  // initial cycle
+                for (int x = v; x != w; x = edgeTo[x])
+                    cycle.push(x);      // collect all vertices on stack from v to w
+                cycle.push(w);          // collect w as beginning
+                cycle.push(v);          // collect v again to form a closed cycle
+            }
+        }
+        onStack[v] = false; // finish recursion call so clear v from stack
+    }
+
     public boolean hasCycle() {
         return cycle != null;
     }

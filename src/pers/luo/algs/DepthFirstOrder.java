@@ -27,6 +27,24 @@ public class DepthFirstOrder {
         reversePost.push(v);    // order of reverse post order
     }
 
+    public DepthFirstOrder(EdgeWeightedDigraph G) {
+        marked = new boolean[G.V()];
+        pre         = new Queue<>();
+        post        = new Queue<>();
+        reversePost = new Stack<>();
+        for (int s = 0; s < G.V(); s++)
+            if (!marked[s]) dfs(G, s);
+    }
+
+    private void dfs(EdgeWeightedDigraph G, int v) {
+        marked[v] = true;
+        pre.enqueue(v);         // order of recursive call
+        for (DirectedEdge e : G.adj(v))
+            if (!marked[e.to()]) dfs(G, e.to());
+        post.enqueue(v);        // order of return
+        reversePost.push(v);    // order of reverse post order
+    }
+
     public Iterable<Integer> pre() {
         return pre;
     }
