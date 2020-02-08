@@ -1,8 +1,9 @@
 package pers.luo.algs;
 
-/*
+/**
  * Single-Source Shortest Path Algorithm for acyclic directed graph
- */
+ * @author Luo Wenyang
+  */
 public class AcyclicSP implements SP {
     private DirectedEdge[] edgeTo;  // last edge of shortest path
     private double[] distTo;        // distance to source

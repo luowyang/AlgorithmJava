@@ -1,8 +1,9 @@
 package pers.luo.algs;
 
-/*
-* Weighted Directed Edge v->w
-*/
+/**
+ * Weighted Directed Edge v->w
+ * @author Luo Wenyang
+ */
 public class DirectedEdge {
     private final int v;            // from v
     private final int w;            // to w

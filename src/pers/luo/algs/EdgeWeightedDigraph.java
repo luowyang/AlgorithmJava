@@ -3,9 +3,10 @@ package pers.luo.algs;
 import java.io.InputStream;
 import java.util.Scanner;
 
-/*
-* Weighted Directed Graph
-*/
+/**
+ * Weighted Directed Graph
+ * @author Luo Wenyang
+ */
 @SuppressWarnings("unchecked")
 public class EdgeWeightedDigraph {
     private final int V;                // vertex counter

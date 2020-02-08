@@ -1,8 +1,9 @@
 package pers.luo.algs;
 
-/*
-* Dijkstra Single-Source Shortest Path Algorithm
-*/
+/**
+ * Dijkstra Single-Source Shortest Path Algorithm
+ * @author Luo Wenyang
+ */
 public class DijkstraSP implements SP {
     private DirectedEdge[] edgeTo;  // edgeTo[v] is the edge from v's parent to v
     private double[] distTo;        // distTo[v] is the distance (total weight) from s to v
