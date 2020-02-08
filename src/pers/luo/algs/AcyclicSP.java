@@ -12,7 +12,7 @@ public class AcyclicSP implements SP {
         distTo[s] = 0.0;                            // source has 0.0 distance
 
         Topological top = new Topological(G);
-        for (int v : top.order())
+        for (int v : top.order())                   // no need to handle vertices before s as their distances are infinity
             relax(G, v);                            // relax vertices in topological order
     }
 
