@@ -4,9 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
 
-/*
-* Edge Weighted Graph
-*/
+/**
+ * Edge Weighted Graph
+ * @author Luo Wenyang
+**/
 @SuppressWarnings("unchecked")
 public class EdgeWeightedGraph {
     private final int V;        // vertices counter
