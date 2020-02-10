@@ -1,10 +1,11 @@
 package pers.luo.algs;
 
 /**
- * Bellman-Ford Single-Source Shortest Path Algorithm
+ * Detect negative cycles with Bellman-Ford algorithm.
+ * This is possible because Bellman-Ford with neglect any non-negative cycles
  * @author Luo Wenyang
- */
-public class BellmanFordSP implements SP {
+ **/
+public class NegativeCycle {
     private DirectedEdge[] edgeTo;          // edgeTo[v] is the edge from v's parent to v
     private double[] distTo;                // distTo[v] is the distance (total weight) from s to v
     private Queue<Integer> queue;           // vertices to be relaxed
@@ -12,17 +13,17 @@ public class BellmanFordSP implements SP {
     private Stack<DirectedEdge> cycle;      // record the negatively weighted cycle if it exists
     private int cost;                       // counter of relax() calls, used to detect negative cycles
 
-    public BellmanFordSP(EdgeWeightedDigraph G, int s) {
+    public NegativeCycle(EdgeWeightedDigraph G) {
         //initialize variables
         edgeTo = new DirectedEdge[G.V()];   // null by default
-        distTo = new double[G.V()];
-        for (int v = 0; v < G.V(); v++)     // no vertex is reachable in the beginning
-            distTo[v] = Double.POSITIVE_INFINITY;
-        distTo[s] = 0.0;                    // source distance is 0.0
+        distTo = new double[G.V()];         // 0.0 by default, as if a new source with 0.0-weighted edges to all vertices are added
         queue = new Queue<>();
         onQ = new boolean[G.V()];
         // initiate start state
-        queue.enqueue(s);
+        for (int v = 0; v < G.V(); v++) {
+            queue.enqueue(v);
+            onQ[v] = true;
+        }
         // main body of Bellman-Ford algorithm
         while (!queue.isEmpty() && !hasNegativeCycle()) {   // continue iteration if queue has next vertex and no negative cycle
             int v = queue.dequeue();                        // fetch next vertex v
@@ -50,24 +51,6 @@ public class BellmanFordSP implements SP {
             if (cost++ % G.V() == 0)
                 findNegativeCycle();    // try to find negative cycle every V times of relaxation
         }
-    }
-
-    @Override
-    public double distTo(int v) {
-        return distTo[v];
-    }
-
-    @Override
-    public boolean hasPathTo(int v) {
-        return distTo[v] < Double.POSITIVE_INFINITY;
-    }
-
-    @Override
-    public Iterable<DirectedEdge> pathTo(int v) {
-        Stack<DirectedEdge> path = new Stack<>();
-        for (DirectedEdge e = edgeTo[v]; e != null; e = edgeTo[e.from()])
-            path.push(e);
-        return path;
     }
 
     // find the negative cycle if any exists
@@ -111,22 +94,14 @@ public class BellmanFordSP implements SP {
 
     public static void main(String[] args) {
         EdgeWeightedDigraph G = new EdgeWeightedDigraph(System.in);
-        int s = Integer.parseInt(args[0]);
-        BellmanFordSP sp = new BellmanFordSP(G, s);
-        System.out.println((sp.hasNegativeCycle()?"Has":"No") + " negative cycle");
-        if (sp.hasNegativeCycle()) {
+        NegativeCycle nc = new NegativeCycle(G);
+        System.out.println((nc.hasNegativeCycle()?"Has":"No") + " negative cycle");
+        if (nc.hasNegativeCycle()) {
             System.out.print("Negative cycle: ");
-            for (DirectedEdge e : sp.cycle)
+            for (DirectedEdge e : nc.cycle)
                 System.out.print(e + "  ");
             System.out.println();
             return;
-        }
-        for (int v = 0; v < G.V(); v++) {
-            System.out.printf("%d to %d (%f): ", s, v, sp.distTo(v));
-            if (sp.hasPathTo(v))
-                for (DirectedEdge e : sp.pathTo(v))
-                    System.out.print(e + "  ");
-            System.out.println();
         }
     }
 }
