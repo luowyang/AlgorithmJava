@@ -2,7 +2,9 @@ package pers.luo.algs;
 
 /**
  * Detect negative cycles with Bellman-Ford algorithm.
- * This is possible because Bellman-Ford with neglect any non-negative cycles
+ * This is possible because Bellman-Ford with neglect any non-negative cycles.
+ * Initialize distTo[] to be all 0s, as if a new source with 0-weighted edges to all vertices are added.
+ * Searching for negative cycles in two graphs are equivalent
  * @author Luo Wenyang
  **/
 public class NegativeCycle {
@@ -16,7 +18,7 @@ public class NegativeCycle {
     public NegativeCycle(EdgeWeightedDigraph G) {
         //initialize variables
         edgeTo = new DirectedEdge[G.V()];   // null by default
-        distTo = new double[G.V()];         // 0.0 by default, as if a new source with 0.0-weighted edges to all vertices are added
+        distTo = new double[G.V()];         // 0.0 by default
         queue = new Queue<>();
         onQ = new boolean[G.V()];
         // initiate start state
