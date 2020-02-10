@@ -1,7 +1,7 @@
 package pers.luo.algs;
 
 /**
- * Dijkstra Single-Source Shortest Path Algorithm
+ * Eager Dijkstra Single-Source Shortest Path Algorithm
  * @author Luo Wenyang
  */
 public class DijkstraSP implements SP {
