@@ -27,7 +27,8 @@ public class UnionFind implements UF {
     public int find(int p)
     {
         int root = p;
-        while (root != id[root]) root = id[root];
+        while (root != id[root]) root = id[root];   // find root
+        // path compression
         for (int q; p != root; p = q) {
             q = id[p];
             id[p] = root;

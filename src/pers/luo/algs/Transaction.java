@@ -9,6 +9,8 @@ public class Transaction implements Comparable<Transaction> {
     private final Date when;
     private final double amount;
 
+    private int hash = -1;
+
     public Transaction(String who, Date when, double amount)
     { this.who = who; this.when = when; this.amount = amount; }
 
@@ -42,6 +44,16 @@ public class Transaction implements Comparable<Transaction> {
         if (!this.when.equals(t.when)) return false;
         if (this.amount != t.amount) return false;
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        if (hash >= 0) return hash;
+        hash = 17;
+        hash = 31 * hash + who.hashCode();
+        hash = 31 * hash + when.hashCode();
+        hash = 31 * hash + ((Double) amount).hashCode();
+        return hash;
     }
 
     public int compareTo(Transaction that)

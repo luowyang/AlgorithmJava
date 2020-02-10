@@ -1,5 +1,6 @@
 package pers.luo.algs;
 
+import edu.princeton.cs.algs4.RedBlackBST;
 import javafx.scene.paint.Stop;
 
 import java.util.Scanner;
@@ -20,6 +21,12 @@ public class FrequencyCounter {
                 return new TTFBST<>();
             case "AVL":
                 return new AVLBST<>();
+            case "SCH":
+                return new SeparateChainingHashST<>(99997);
+            case "LPH":
+                return new LinearProbingHashST<>(99997);
+            case "AVLSCH":
+                return new AVLSCHST<>(99997);
             default:
                 throw new IllegalArgumentException("Unknown algorithm " + alg);
         }
@@ -66,7 +73,7 @@ public class FrequencyCounter {
             String word = scanner.next();
             if (word.length() >= threshold) queue.enqueue(word);
         }
-        System.out.println("Read input in " + timer.elapsedTime() + " seconds");
+        System.out.println("Read " + queue.size() + " inputs in " + timer.elapsedTime() + " seconds");
         counter(queue, alg);
     }
 }

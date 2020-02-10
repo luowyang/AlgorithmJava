@@ -13,7 +13,7 @@ public class SearchCompare {
             String word = scanner.next();
             if (word.length() >= threshold) queue.enqueue(word);
         }
-        System.out.println("Read input in " + timer.elapsedTime() + " seconds");
+        System.out.println("Read " + queue.size() + " inputs in " + timer.elapsedTime() + " seconds");
         double t1 = FrequencyCounter.counter(queue, args[0]);
         double t2 = FrequencyCounter.counter(queue, args[1]);
         System.out.println(args[0] + " is " + t2/t1 + " times faster than " + args[1]);

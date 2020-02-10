@@ -22,6 +22,26 @@ public class Bag<Item> implements Iterable<Item> {
         }
     }
 
+    public Bag() {
+        first = null;
+        N = 0;
+    }
+
+    // copy constructor
+    public Bag(Bag<Item> bag) {
+        if (bag == null) throw new IllegalArgumentException("Null argument for bag copy constructor");
+        if (bag.isEmpty()) return;
+        this.N = bag.N;
+        this.first = new Node<>(bag.first.item, null);
+        Node<Item> x = this.first;
+        Node<Item> y = bag.first.next;
+        while (y != null) {
+            x.next = new Node<>(y.item, null);
+            x = x.next;
+            y = y.next;
+        }
+    }
+
     public boolean isEmpty()
     { return first == null; }
 
@@ -30,8 +50,14 @@ public class Bag<Item> implements Iterable<Item> {
 
     public void add(Item item)
     {   // add item to the bag
-        first = new Node<Item>(item, first);
+        first = new Node<>(item, first);
         N++;
+    }
+
+    public boolean contains(Item item) {
+        for (Node<Item> cur = first; cur != null; cur = cur.next)
+            if (cur.item.equals(item)) return true;
+        return false;
     }
 
     private class ListIterator implements Iterator<Item> {
@@ -52,7 +78,7 @@ public class Bag<Item> implements Iterable<Item> {
 
     public static void main(String[] args)
     {
-        Bag<String> bag = new Bag<String>();
+        Bag<String> bag = new Bag<>();
         while (!StdIn.isEmpty()) {
             String item = StdIn.readString();
             bag.add(item);

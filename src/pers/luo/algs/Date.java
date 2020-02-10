@@ -69,6 +69,15 @@ public class Date implements Comparable<Date> {
         return 0;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 17;
+        hash = 31 * hash + year;
+        hash = 31 * hash + month;
+        hash = 31 * hash + day;
+        return hash;
+    }
+
     private boolean isLeapYear()
     { return (year % 4 == 0) && ((year % 100 != 0) || (year % 400 == 0)); }
 

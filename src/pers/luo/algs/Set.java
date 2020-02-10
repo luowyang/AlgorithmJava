@@ -1,26 +1,19 @@
 package pers.luo.algs;
 
-import edu.princeton.cs.algs4.StdDraw;
-
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
+public class Set<Key extends Comparable<Key>> {
     private Node root;
     private Node cache; // software caching
 
-    private int treeLevel;
-
     private class Node {
         Key key;
-        Value value;
         Node left, right;
         int size;
         int height;
-        double xCoordinate, yCoordinate;
-        public Node(Key key, Value value, int size, int height) {
+        public Node(Key key, int size, int height) {
             this.key = key;
-            this.value = value;
             this.left = null;
             this.right = null;
             this.size = size;
@@ -83,7 +76,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return node;
     }
 
-    @Override
     public Key min() {
         if (isEmpty()) return null;
         return min(root).key;
@@ -94,7 +86,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return node;
     }
 
-    @Override
     public Key max() {
         if (isEmpty()) return null;
         return max(root).key;
@@ -105,7 +96,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return node;
     }
 
-    @Override
     public Key floor(Key key) {
         Key candidate = null;
         Node cur = root;
@@ -118,7 +108,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return candidate;
     }
 
-    @Override
     public Key ceiling(Key key) {
         Key candidate = null;
         Node cur = root;
@@ -131,7 +120,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return candidate;
     }
 
-    @Override
     public int rank(Key key) {
         Node cur = root;
         int r = 0;          // r stores # of known nodes less than key
@@ -144,7 +132,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return r;
     }
 
-    @Override
     public Key select(int k) {
         Node cur = root;
         while (cur != null) {
@@ -156,7 +143,10 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return null;    // will trigger only if k is out of bound
     }
 
-    @Override
+    public Iterable<Key> keys() {
+        return keys(min(), max());
+    }
+
     public Iterable<Key> keys(Key lo, Key hi) {
         Queue<Key> queue = new Queue<>();
         keys(root, queue, lo, hi);
@@ -171,42 +161,36 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         if (cmphi > 0) keys(node.right, queue, lo, hi);
     }
 
-    @Override
-    public void put(Key key, Value value) {
-        if (cache != null && cache.key.compareTo(key) == 0) {
-            cache.value = value;
-            return;
-        }
-        root = put(root, key, value);
+    public void add(Key key) {
+        if (cache != null && cache.key.compareTo(key) == 0) return;
+        root = add(root, key);
     }
-    private Node put(Node node, Key key, Value value) {
+    private Node add(Node node, Key key) {
         if (node == null) {
-            cache = new Node(key, value, 1, 1);
+            cache = new Node(key, 1, 1);
             return cache;
         }
         int cmp = key.compareTo(node.key);
-        if      (cmp < 0) node.left  = put(node.left, key, value);
-        else if (cmp > 0) node.right = put(node.right, key, value);
-        else              node.value = value;
+        if      (cmp < 0) node.left  = add(node.left, key);
+        else if (cmp > 0) node.right = add(node.right, key);
+        else              return node;
         node.height = 1 + Math.max(height(node.left), height(node.right));
         node.size = 1 + size(node.left) + size(node.right);
         return balance(node);
     }
 
-    @Override
-    public Value get(Key key) {
-        if (cache != null && cache.key.compareTo(key) == 0) return cache.value;
+    public boolean contains(Key key) {
+        if (cache != null && cache.key.compareTo(key) == 0) return true;
         Node cur = root;
         while (cur != null) {
             int cmp = cur.key.compareTo(key);
             if      (cmp > 0) cur = cur.left;
             else if (cmp < 0) cur = cur.right;
-            else { cache = cur; return cur.value; }
+            else { cache = cur; return true; }
         }
-        return null;
+        return false;
     }
 
-    @Override
     public void deleteMin() {
         if (isEmpty()) throw new NoSuchElementException("Minimum does not exist");
         root = deleteMin(root);
@@ -223,7 +207,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return balance(node);
     }
 
-    @Override
     public void deleteMax() {
         if (isEmpty()) throw new NoSuchElementException("Maximum does not exist");
         root = deleteMax(root);
@@ -240,7 +223,6 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return balance(node);
     }
 
-    @Override
     public void delete(Key key) {
         if (key == null) throw new IllegalArgumentException("Argument of delete() cannot be null");
         if (isEmpty()) return;
@@ -269,101 +251,35 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         return balance(node);
     }
 
-    @Override
     public int size() {
         return size(root);
     }
 
+    public boolean isEmpty() {
+        return size(root) == 0;
+    }
+
     public static void main(String[] args)
     {
-        AVLBST<String, Integer> st = new AVLBST<>();
+        Set<String> set = new Set<>();
         Scanner scanner = new Scanner(System.in);
-        for (int i = 0; scanner.hasNext(); i++) {
+        while (scanner.hasNext()) {
             String key = scanner.next();
-            st.put(key, i);
+            set.add(key);
         }
-        for (String s : st.keys())
-            System.out.println(s + " " + st.get(s));
-        System.out.println("min      : " + st.min());
-        System.out.println("max      : " + st.max());
-        System.out.println("floor D  : " + st.floor("D"));
-        System.out.println("ceiling D: " + st.ceiling("D"));
-        System.out.println("rank N   : " + st.rank("N"));
-        System.out.println("select 4 : " + st.select(4));
-        // st.draw();
-        st.deleteMin();
-        st.deleteMax();
-        st.delete("E");
-        st.delete("M");
-        for (String s : st.keys())
-            System.out.println(s + " " + st.get(s));
-        st.draw();
-    }
-
-
-    // below is draw method
-    public void draw() {
-        treeLevel = 0;
-        setCoordinates(root, 0.9);
-
-        StdDraw.clear();
-        StdDraw.setPenColor(StdDraw.BLACK);
-        drawLines(root);
-        drawNodes(root);
-    }
-
-    private void setCoordinates(Node node, double distance) {
-        if (node == null) {
-            return;
-        }
-
-        setCoordinates(node.left, distance - 0.05);
-        node.xCoordinate = (0.5 + treeLevel++) / size();
-        node.yCoordinate = distance - 0.05;
-        setCoordinates(node.right, distance - 0.05);
-    }
-
-    private void drawLines(Node node) {
-        if (node == null) {
-            return;
-        }
-
-        drawLines(node.left);
-
-        if (node.left != null) {
-            StdDraw.line(node.xCoordinate, node.yCoordinate, node.left.xCoordinate, node.left.yCoordinate);
-            resetPen();
-        }
-        if (node.right != null) {
-            StdDraw.line(node.xCoordinate, node.yCoordinate, node.right.xCoordinate, node.right.yCoordinate);
-            resetPen();
-        }
-
-        drawLines(node.right);
-    }
-
-    private void resetPen() {
-        StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.setPenRadius(0.0025);
-    }
-
-    private void drawNodes(Node node) {
-        if (node == null) {
-            return;
-        }
-
-        double nodeRadius = 0.032;
-
-        drawNodes(node.left);
-
-        StdDraw.setPenColor(StdDraw.WHITE);
-        //Clear the node circle area
-        StdDraw.filledCircle(node.xCoordinate, node.yCoordinate, nodeRadius);
-
-        StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.circle(node.xCoordinate, node.yCoordinate, nodeRadius);
-        StdDraw.text(node.xCoordinate, node.yCoordinate, String.valueOf(node.key));
-
-        drawNodes(node.right);
+        for (String s : set.keys())
+            System.out.println(s);
+        System.out.println("min      : " + set.min());
+        System.out.println("max      : " + set.max());
+        System.out.println("floor D  : " + set.floor("D"));
+        System.out.println("ceiling D: " + set.ceiling("D"));
+        System.out.println("rank N   : " + set.rank("N"));
+        System.out.println("select 4 : " + set.select(4));
+        set.deleteMin();
+        set.deleteMax();
+        set.delete("E");
+        set.delete("M");
+        for (String s : set.keys())
+            System.out.println(s);
     }
 }
