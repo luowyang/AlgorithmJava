@@ -25,9 +25,12 @@ public class BellmanFordSP implements SP {
         queue.enqueue(s);
         // main body of Bellman-Ford algorithm
         while (!queue.isEmpty() && !hasNegativeCycle()) {   // continue iteration if queue has next vertex and no negative cycle
-            int v = queue.dequeue();    // fetch next vertex v
-            onQ[v] = false;             // v is not on queue now
-            relax(G, v);                // relax it and enqueue changed vertices
+            int v = queue.dequeue();                        // fetch next vertex v
+            onQ[v] = false;                                 // v is not on queue now
+            // heuristic parent check
+            if (edgeTo[v] != null && onQ[edgeTo[v].from()])
+                continue;                                   // only relax v if v's parent in SPT is not on queue
+            relax(G, v);                                    // relax it and enqueue changed vertices
         }
     }
 
