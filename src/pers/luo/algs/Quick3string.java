@@ -9,7 +9,7 @@ import edu.princeton.cs.algs4.StdIn;
 public class Quick3string {
     private static int M = 10;  // switching threshold
 
-    // convert finished strings to -1 so they will be less than any unfinished string
+    // map finished strings to -1 so they will be less than any unfinished string
     private static int charAt(String s, int d) {
         return d < s.length() ? s.charAt(d) : -1;
     }
