@@ -7,6 +7,11 @@ import edu.princeton.cs.algs4.StdIn;
  * @author Luo Wenyang
  **/
 public class LSD {
+    // map finished string to -1
+    private static int charAt(String s, int d) {
+        return d < s.length() ? s.charAt(d) : -1;
+    }
+
     // sort a[] by the first W chars
     public static void sort(String[] a, int W) {
         int N = a.length;               // number of strings
@@ -14,14 +19,14 @@ public class LSD {
         String[] aux = new String[N];   // auxiliary array
         // do counting sort from LSD to MSD
         for (int d = W-1; d >= 0; d--) {
-            int[] count = new int[R+1];                 // counter of frequency
+            int[] count = new int[R+2];                 // counter of frequency
             // counting
-            for (String s : a) count[s.charAt(d) + 1]++;        // count[k+1] is the frequency of k
+            for (String s : a) count[charAt(s, d) + 2]++;           // count[r+2] is the frequency of r
             // accumulating
-            for (int r = 0; r < R; r++)
-                count[r+1] += count[r];                         // count[k] is the frequency of keys less than k
+            for (int r = 0; r < R+1; r++)
+                count[r+1] += count[r];                             // count[r+1] is the frequency of keys less than r
             // sorting
-            for (String s : a) aux[count[s.charAt(d)]++] = s;   // sort to aux[] using count[] as index indicator
+            for (String s : a) aux[count[charAt(s, d) + 1]++] = s;  // sort to aux[] using count[] as index indicator
             // writing back
             System.arraycopy(aux, 0, a, 0, N);
         }
@@ -29,9 +34,12 @@ public class LSD {
 
     public static void main(String[] args) {
         String[] a = StdIn.readAllStrings();
-        LSD.sort(a, a[0].length());
+        int W = 0;
+        for (String s : a) W = Math.max(W, s.length());
+        LSD.sort(a, W);
         for (String s : a)
             System.out.print(s + " ");
         System.out.println();
+        System.out.println("is sorted: " + Util.isSorted(a));
     }
 }
