@@ -76,7 +76,7 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
             if (balanceFactor(node.left) < 0) node.left = rotateLeft(node.left);  // case 2
             node = rotateRight(node);   // case 1
         }
-        if (balanceFactor(node) < -1) {
+        else if (balanceFactor(node) < -1) {
             if (balanceFactor(node.right) > 0) node.right = rotateRight(node.right);  // case 3
             node = rotateLeft(node);   // case 4
         }
