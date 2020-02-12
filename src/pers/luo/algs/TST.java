@@ -139,11 +139,11 @@ public class TST<Value> implements StringST<Value> {
                              node.mid = delete(node.mid, key, d);
         else if (node.value != null) {
             node.value = null;
-            if (size(node.mid) == 0) {
-                if (node.left == null) return node.right;
-                if (node.right == null) return node.left;
-                // TODO: exchange node with right min and delete
-            }
+        }
+        if (node.value == null && size(node.mid) == 0) {
+            if (node.left == null) return node.right;
+            if (node.right == null) return node.left;
+            // TODO: exchange node with right min and delete
         }
         // update size
         node.size = (node.value == null) ? 0 : 1;
