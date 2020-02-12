@@ -9,14 +9,14 @@ import java.util.Scanner;
  * @author Luo Wenyang
  **/
 @SuppressWarnings("unchecked")
-public class TrieST<Value> {
+public class TrieST<Value> implements StringST<Value> {
     private static int R = 256;     // radix
     private Node<Value> root;       // root of the trie
 
     private static class Node<Value> {
-        private Value value = null;
-        private int size = 0;
-        private Node<Value>[] next = (Node<Value>[]) new Node[R];
+        Value value;
+        int size;
+        Node<Value>[] next = (Node<Value>[]) new Node[R];
     }
 
     // get the value bound to key
@@ -87,6 +87,11 @@ public class TrieST<Value> {
 
     private int size(Node<Value> node) {
         return node == null ? 0: node.size;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size(root) == 0;
     }
 
     public boolean contains(String key) {
