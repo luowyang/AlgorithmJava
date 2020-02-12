@@ -15,12 +15,66 @@ public class TST<Value> implements StringST<Value> {
     private static class Node<Value> {
         char c;
         int size;
+        int height;
         Node<Value> left, mid, right;
         Value value;
 
         public Node(char c) {
             this.c = c;
         }
+    }
+
+    // helpers for balancing
+    private int height(Node<Value> node) {
+        return node == null ? 0 : node.height;
+    }
+
+    private int balanceFactor(Node<Value> node) {
+        if (node == null) return 0;
+        return height(node.left) - height(node.right);
+    }
+
+    private Node<Value> rotateLeft(Node<Value> node) {
+        Node<Value> x = node.right;
+        // set links
+        node.right = x.left;
+        x.left = node;
+        // set heights
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        x.height = 1 + Math.max(height(x.left), height(x.right));
+        // set sizes
+        x.size = node.size;
+        node.size = (node.value == null) ? 0 : 1;
+        node.size += size(node.left) + size(node.mid) + size(node.right);
+        return x;
+    }
+
+    private Node<Value> rotateRight(Node<Value> node) {
+        Node<Value> x = node.left;
+        // set links
+        node.left = x.right;
+        x.right = node;
+        // set heights
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        x.height = 1 + Math.max(height(x.left), height(x.right));
+        // set sizes
+        x.size = node.size;
+        node.size = (node.value == null) ? 0 : 1;
+        node.size += size(node.left) + size(node.mid) + size(node.right);
+        return x;
+    }
+
+    private Node<Value> balance(Node<Value> node) {
+        int bf = balanceFactor(node);
+        if (bf > 1) {
+            if (balanceFactor(node.left) < 0) node.left = rotateLeft(node.left);
+            node = rotateRight(node);
+        }
+        else if (bf < -1) {
+            if (balanceFactor(node.right) > 0) node.right = rotateRight(node.right);
+            node = rotateLeft(node);
+        }
+        return node;
     }
 
     @Override
@@ -62,17 +116,42 @@ public class TST<Value> implements StringST<Value> {
             }
             // update value
             node.value = value;
-            return node;
         }
         // update size
         node.size = (node.value == null) ? 0 : 1;
         node.size += size(node.left) + size(node.mid) + size(node.right);
-        return node;
+        // update height
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        return balance(node);
     }
 
     @Override
     public void delete(String key) {
+        root = delete(root, key, 0);
+    }
 
+    private Node<Value> delete(Node<Value> node, String key, int d) {
+        if (node == null) return null;
+        char c = key.charAt(d);
+        if      (c < node.c) node.left = delete(node.left, key, d);
+        else if (c > node.c) node.right = delete(node.right, key, d);
+        else if (++d < key.length())
+                             node.mid = delete(node.mid, key, d);
+        else if (node.value != null) {
+            node.value = null;
+            if (size(node.mid) == 0) {
+                if (node.left == null) return node.right;
+                if (node.right == null) return node.left;
+                // TODO: exchange node with right min and delete
+            }
+        }
+        // update size
+        node.size = (node.value == null) ? 0 : 1;
+        node.size += size(node.left) + size(node.mid) + size(node.right);
+        if (node.size == 0) return null;
+        // update height
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        return balance(node);
     }
 
     @Override
@@ -108,7 +187,7 @@ public class TST<Value> implements StringST<Value> {
         while (cur != null && d < n) {
             char c = pre.charAt(d);
             if      (c < cur.c) cur = cur.left;
-            else if (c > cur.c) cur = cur.left;
+            else if (c > cur.c) cur = cur.right;
             else {
                 if (++d == n && cur.value != null)
                     queue.enqueue(pre);
@@ -188,7 +267,7 @@ public class TST<Value> implements StringST<Value> {
             String s = scanner.next();
             trie.put(s, index++);
         }
-        System.out.println("size: " + trie.size());
+        System.out.println("(size: " + trie.size() + ")");
         // test keys()
         System.out.println("test keys():");
         for (String s : trie.keys())
@@ -223,7 +302,7 @@ public class TST<Value> implements StringST<Value> {
             String query = stdin.nextLine();
             if (query.equals("exit")) break;
             trie.delete(query);
-            System.out.println("size: " + trie.size());
+            System.out.println("(size: " + trie.size() + ")");
             for (String s : trie.keys())
                 System.out.println(s + " " + trie.get(s));
         }
