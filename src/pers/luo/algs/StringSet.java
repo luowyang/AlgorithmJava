@@ -120,6 +120,11 @@ public class StringSet {
         else if (node.isKey) {
             node.isKey = false;
         }
+        if (!node.isKey && size(node.mid) == 0) {
+            if (node.left == null) return node.right;
+            if (node.right == null) return node.left;
+            // TODO: both left and right not null
+        }
         node.size = node.isKey ? 1 : 0;
         node.size += size(node.left) + size(node.mid) + size(node.right);
         if (node.size == 0) return null;
@@ -150,10 +155,163 @@ public class StringSet {
         return size(root);
     }
 
+    // containsPrefix
+    public boolean containsPrefix(String s) {
+        Node cur = root;
+        int d = 0, n = s.length();
+        while (cur != null && d < n) {
+            char c = s.charAt(d);
+            if      (c < cur.c) cur = cur.left;
+            else if (c > cur.c) cur = cur.right;
+            else if (++d < n)   cur = cur.mid;
+        }
+        if (cur == null) return false;
+        return cur.isKey || size(cur.mid) > 0;
+    }
+
+    // min
+    public String min() {
+        return min(root, new StringBuilder());
+    }
+
+    private String min(Node node, StringBuilder pre) {
+        if (node == null) return null;
+        while (node != null) {
+            while (node.left != null) node = node.left;
+            pre.append(node.c);
+            if (node.isKey) return pre.toString();
+            node = node.mid;
+        }
+        return null;
+    }
+
+    // max
+    public String max() {
+        return max(root, new StringBuilder());
+    }
+
+    private String max(Node node, StringBuilder pre) {
+        if (node == null) return null;
+        if (node.right != null) return max(node.right, pre);
+        pre.append(node.c);
+        if (node.mid == null) return pre.toString();
+        return max(node.mid, pre);
+    }
+
+    // floor
+    public String floor(String key) {
+        return floor(root, key, new StringBuilder(), 0);
+    }
+
+    private String floor(Node node, String key, StringBuilder pre, int d) {
+        if (node == null) return null;
+        char c = key.charAt(d);
+        if (c < node.c) return floor(node.left, key, pre, d);
+        String s;
+        if (c > node.c) {
+            s = floor(node.right, key, pre, d);
+            if (s == null) s = max(node.mid, pre.append(node.c));
+            if (s == null && node.isKey) return pre.toString();
+            pre.deleteCharAt(pre.length() - 1);
+            if (s == null) return max(node.left, pre);
+        }
+        else if (++d < key.length()) {
+            s = floor(node.mid, key, pre.append(node.c), d);
+            if (s == null && node.isKey) return pre.toString();
+            pre.deleteCharAt(pre.length() - 1);
+            if (s == null) return max(node.left, pre);
+        }
+        else if (node.isKey) return pre.toString() + node.c;
+        else return max(node.left, pre);
+        return s;
+    }
+
+    // ceiling
+    public String ceiling(String key) {
+        return ceiling(root, key, new StringBuilder(), 0);
+    }
+
+    private String ceiling(Node node, String key, StringBuilder pre, int d) {
+        if (node == null) return null;
+        char c = key.charAt(d);
+        if (c > node.c) return ceiling(node.right, key, pre, d);
+        String s;
+        if (c < node.c) {
+            s = ceiling(node.left, key, pre, d);
+            if (s == null) s = min(node.mid, pre.append(node.c));
+            if (s == null && node.isKey) return pre.toString();
+            pre.deleteCharAt(pre.length() - 1);
+            if (s == null) return min(node.right, pre);
+        }
+        else if (++d < key.length()) {
+            s = ceiling(node.mid, key, pre.append(node.c), d);
+            if (s == null && node.isKey) return pre.toString();
+            pre.deleteCharAt(pre.length() - 1);
+            if (s == null) return min(node.right, pre);
+        }
+        else if (node.isKey) return pre.toString() + node.c;
+        else {
+            s = min(node.mid, pre.append(node.c));
+            pre.deleteCharAt(pre.length() - 1);
+            if (s == null) return min(node.right, pre);
+        }
+        return s;
+    }
+
+    // rank
+    public int rank(String key) {
+        Node cur = root;
+        int d = 0, n = key.length();
+        int r = 0;
+        while (cur != null && d < n) {
+            char c = key.charAt(d);
+            if      (c < cur.c) cur = cur.left;
+            else if (c > cur.c) {
+                if (cur.isKey) r++;
+                r += size(cur.left) + size(cur.mid);
+                cur = cur.right;
+            }
+            else {
+                if (++d < n && cur.isKey) r++;
+                r += size(cur.left);
+                cur = cur.mid;
+            }
+        }
+        return r;
+    }
+
+    // select
+    public String select(int k) {
+        StringBuilder s = new StringBuilder();
+        Node cur = root;
+        while (cur != null && k >= 0) {
+            if      (size(cur.left) > k) cur = cur.left;
+            else if (size(cur.left) == k) {
+                s.append(cur.c);
+                if (cur.isKey) return s.toString();
+                if (size(cur.mid) > 0) return min(cur.mid, s);
+                s.deleteCharAt(s.length() - 1);
+                return min(cur.right, s);
+            }
+            else if (k < size(cur) - size(cur.right)) {
+                if (cur.isKey) k--;
+                k -= size(cur.left);
+                s.append(cur.c);
+                cur = cur.mid;
+            }
+            else {
+                k -= size(cur) - size(cur.right);
+                cur = cur.right;
+            }
+        }
+        if (cur == null) return null;
+        return s.toString();
+    }
+
     // keys
     public Iterable<String> keys() {
         Queue<String> queue = new Queue<>();
-        collect(root, new StringBuilder(""), queue);
+        collect(root, new StringBuilder(), queue);
         return queue;
     }
 
@@ -208,6 +366,45 @@ public class StringSet {
             if (query.equals("exit")) break;
             System.out.println(" " + trie.longestPrefixOf(query));
         }*/
+        // test min()
+        System.out.println("test min(): " + set.min());
+        // test max()
+        System.out.println("test max(): " + set.max());
+        // test floor()
+        System.out.println("test floor():");
+        while (stdin.hasNextLine()) {
+            String query = stdin.nextLine();
+            if (query.equals("exit")) break;
+            System.out.println(set.floor(query));
+        }
+        // test ceiling()
+        System.out.println("test ceiling():");
+        while (stdin.hasNextLine()) {
+            String query = stdin.nextLine();
+            if (query.equals("exit")) break;
+            System.out.println(set.ceiling(query));
+        }
+        // test rank()
+        System.out.println("test rank():");
+        while (stdin.hasNextLine()) {
+            String query = stdin.nextLine();
+            if (query.equals("exit")) break;
+            System.out.println(set.rank(query));
+        }
+        // test select()
+        System.out.println("test select():");
+        while (stdin.hasNextLine()) {
+            String query = stdin.nextLine();
+            if (query.equals("exit")) break;
+            System.out.println(set.select(Integer.parseInt(query)));
+        }
+        // test containsPrefix()
+        System.out.println("test containsPrefix():");
+        while (stdin.hasNextLine()) {
+            String query = stdin.nextLine();
+            if (query.equals("exit")) break;
+            System.out.println(set.containsPrefix(query));
+        }
         // test delete()
         System.out.println("test delete():");
         while (stdin.hasNextLine()) {
