@@ -24,7 +24,7 @@ public class TST<Value> implements StringST<Value> {
         }
     }
 
-    // helpers for balancing
+    // helpers
     private int height(Node<Value> node) {
         return node == null ? 0 : node.height;
     }
@@ -75,6 +75,48 @@ public class TST<Value> implements StringST<Value> {
             node = rotateLeft(node);
         }
         return node;
+    }
+
+    // find minimum node in the binary searching tree
+    // i.e. do not go middle way
+    private Node<Value> minBST(Node<Value> node) {
+        if (node == null) return null;
+        while (node.left != null) node = node.left;
+        return node;
+    }
+
+    // find maximum node in the binary searching tree
+    // i.e. do not go middle way
+    private Node<Value> maxBST(Node<Value> node) {
+        if (node == null) return null;
+        while (node.right != null) node = node.right;
+        return node;
+    }
+
+    // delete minimum node from BST, do not go middle way
+    private Node<Value> delMinBST(Node<Value> node) {
+        if (node == null) return null;
+        if (node.left == null) return node.right;
+        node.left = delMinBST(node.left);
+        // update size
+        node.size = node.value == null ? 0 : 1;
+        node.size += size(node.left) + size(node.mid) + size(node.right);
+        // update height
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        return balance(node);
+    }
+
+    // delete maximum node from BST, do not go middle way
+    private Node<Value> delMaxBST(Node<Value> node) {
+        if (node == null) return null;
+        if (node.right == null) return node.left;
+        node.right = delMaxBST(node.right);
+        // update size
+        node.size = node.value == null ? 0 : 1;
+        node.size += size(node.left) + size(node.mid) + size(node.right);
+        // update height
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+        return balance(node);
     }
 
     @Override
@@ -143,7 +185,10 @@ public class TST<Value> implements StringST<Value> {
         if (node.value == null && size(node.mid) == 0) {
             if (node.left == null) return node.right;
             if (node.right == null) return node.left;
-            // TODO: exchange node with right min and delete
+            Node<Value> cur = node;
+            node = minBST(node.right);
+            node.right = delMinBST(cur.right);
+            node.left = cur.left;
         }
         // update size
         node.size = (node.value == null) ? 0 : 1;
