@@ -164,7 +164,6 @@ public class TrieST<Value> implements StringST<Value> {
         return s.substring(0, length);
     }
 
-
     public static void main(String[] args) throws FileNotFoundException {
         TrieST<Integer> trie = new TrieST<>();
         Scanner scanner = new Scanner(new FileInputStream(args[0]));
