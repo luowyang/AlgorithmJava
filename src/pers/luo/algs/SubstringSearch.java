@@ -5,7 +5,6 @@ import java.util.Scanner;
 
 /**
  * Substring searching algorithms
- * List: Brute Force, KMP
  * @author Luo Wenyang
  */
 public class SubstringSearch {
