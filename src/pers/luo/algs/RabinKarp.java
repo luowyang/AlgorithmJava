@@ -39,20 +39,30 @@ public class RabinKarp {
 
     // hashing s[0..M-1] with Horner's method
     private long hash(String s, int M, long P) {
+        return hash(s, 0, M, P);
+    }
+
+    // hashing s[offset..offset+M-1] with Horner's method
+    private long hash(String s, int offset, int M, long P) {
         long h = 0;
         for (int i = 0; i < M; i++)
-            h = (h * R + s.charAt(i)) % P;
+            h = (h * R + s.charAt(i+offset)) % P;
         return h;
     }
 
     public int search(String txt) {
+        return search(txt, 0);
+    }
+
+    public int search(String txt, int offset) {
         int N = txt.length();
+        if (N - offset < M) return N;
         // calculate the hash of txt[0..M-1]
-        long txtHashP = hash(txt, M, P);
-        long txtHashQ = hash(txt, M, Q);
+        long txtHashP = hash(txt, offset, M, P);
+        long txtHashQ = hash(txt, offset, M, Q);
         if (txtHashP == patHashP && txtHashQ == patHashQ) return 0;
         //checking fingerprints
-        for (int i = M; i < N; i++) {
+        for (int i = M + offset; i < N; i++) {
             txtHashP = (txtHashP + P - RMP * txt.charAt(i-M) % P) % P;
             txtHashP = (txtHashP * R + txt.charAt(i)) % P;
             txtHashQ = (txtHashQ + Q - RMQ * txt.charAt(i-M) % Q) % Q;
@@ -62,6 +72,29 @@ public class RabinKarp {
         return N;   // no match
     }
 
+    public int count(String txt) {
+        int n = 0, i = 0, N = txt.length();
+        while (true) {
+            i = search(txt, i);
+            if (i == N) break;
+            n++;
+            i++;
+        }
+        return n;
+    }
+
+    public Iterable<Integer> searchAll(String txt) {
+        Queue<Integer> queue = new Queue<>();
+        int i = 0, N = txt.length();
+        while (true) {
+            i = search(txt, i);
+            if (i == N) break;
+            queue.enqueue(i);
+            i++;
+        }
+        return queue;
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -69,6 +102,9 @@ public class RabinKarp {
             String pat = scanner.nextLine();
             RabinKarp rk = new RabinKarp(pat);
             print(txt, pat, rk.search(txt));
+            System.out.println("count: " + rk.count(txt));
+            for (int i : rk.searchAll(txt))
+                System.out.print(i + " ");
         }
     }
 
