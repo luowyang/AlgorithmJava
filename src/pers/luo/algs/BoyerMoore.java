@@ -1,6 +1,5 @@
 package pers.luo.algs;
 
-import javax.imageio.plugins.bmp.BMPImageWriteParam;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -12,7 +11,7 @@ public class BoyerMoore {
     private String pat;
     private int[] right;    // jump table
 
-    private static final int R = 256;
+    private int R = 256;
 
     public BoyerMoore(String pat) {
         this.pat = pat;
