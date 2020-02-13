@@ -7,9 +7,10 @@ import java.util.Scanner;
  * @author Luo Wenyang
  */
 public class KMP {
-    private static final int R = 256;
     private String pat;     // pattern string
     private int[][] dfa;    // state-table of DFA
+
+    private static final int R = 256;
 
     public KMP(String pat) {
         this.pat = pat;
