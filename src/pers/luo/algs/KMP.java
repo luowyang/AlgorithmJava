@@ -40,13 +40,41 @@ public class KMP {
         buildDFA();
     }
 
+    // simulate DFA
     public int search(String txt) {
+        return search(txt, 0);
+    }
+
+    public int search(String txt, int offset) {
         int N = txt.length();
         int M = pat.length();
         int i, j;   // i is the text pointer, j is the pattern pointer and the current state
-        for (i = 0, j = 0; i < N && j < M; i++)
+        for (i = offset, j = 0; i < N && j < M; i++)
             j = dfa[txt.charAt(i)][j];
         return j == M ? i - M : N;
+    }
+
+    public int count(String txt) {
+        int n = 0, i = 0, N = txt.length();
+        while (true) {
+            i = search(txt, i);
+            if (i == N) break;
+            n++;
+            i++;
+        }
+        return n;
+    }
+
+    public Iterable<Integer> searchAll(String txt) {
+        Queue<Integer> queue = new Queue<>();
+        int i = 0, N = txt.length();
+        while (true) {
+            i = search(txt, i);
+            if (i == N) break;
+            queue.enqueue(i);
+            i++;
+        }
+        return queue;
     }
 
     public String toString() {
@@ -67,6 +95,9 @@ public class KMP {
             String pat = scanner.nextLine();
             KMP kmp = new KMP(pat);
             print(txt, pat, kmp.search(txt));
+            System.out.println("count: " + kmp.count(txt));
+            for (int i : kmp.searchAll(txt))
+                System.out.print(i + " ");
         }
     }
 
