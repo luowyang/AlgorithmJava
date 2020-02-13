@@ -32,10 +32,14 @@ public class BoyerMoore {
     }
 
     public int search(String txt) {
+        return search(txt, 0);
+    }
+
+    public int search(String txt, int offset) {
         int N = txt.length();
         int M = pat.length();
         int skip;   // skip distance of i
-        for (int i = 0; i <= N - M; i += skip) {
+        for (int i = offset; i <= N - M; i += skip) {
             skip = 0;   // reset skip to 0
             for (int j = M - 1; j >= 0; j--)
                 if (txt.charAt(i+j) != pat.charAt(j)) { // mismatched
@@ -48,6 +52,29 @@ public class BoyerMoore {
         return N;
     }
 
+    public int count(String txt) {
+        int n = 0, i = 0, N = txt.length();
+        while (true) {
+            i = search(txt, i);
+            if (i == N) break;
+            n++;
+            i++;
+        }
+        return n;
+    }
+
+    public Iterable<Integer> searchAll(String txt) {
+        Queue<Integer> queue = new Queue<>();
+        int i = 0, N = txt.length();
+        while (true) {
+            i = search(txt, i);
+            if (i == N) break;
+            queue.enqueue(i);
+            i++;
+        }
+        return queue;
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
@@ -55,6 +82,9 @@ public class BoyerMoore {
             String pat = scanner.nextLine();
             BoyerMoore bm = new BoyerMoore(pat);
             print(txt, pat, bm.search(txt));
+            System.out.println("count: " + bm.count(txt));
+            for (int i : bm.searchAll(txt))
+                System.out.print(i + " ");
         }
     }
 
