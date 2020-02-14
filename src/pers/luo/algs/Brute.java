@@ -64,15 +64,14 @@ public class Brute {
         int M = pat.length();
         int i = 0;
         CharBuffer buffer = new CharBuffer(M);
-        for (int j = 0; j < M && scanner.hasNext(); j++)
+        for (int j = 0; j < M-1 && scanner.hasNext(); j++)  // j<M-1 because in[M-1] will be read in next loop block
             buffer.add(scanner.next().charAt(0));
-        while (true) {
+        while (scanner.hasNext()) {
+            buffer.add(scanner.next().charAt(0));
             int j = 0;
             while (j < M && pat.charAt(j) == buffer.read(j)) j++;
             if (j == M) queue.enqueue(i);
             buffer.remove();
-            if (!scanner.hasNext()) break;
-            buffer.add(scanner.next().charAt(0));
             i++;
         }
         return queue;
