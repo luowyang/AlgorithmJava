@@ -2,6 +2,7 @@ package pers.luo.algs;
 
 import edu.princeton.cs.algs4.In;
 
+import java.io.InputStream;
 import java.util.Scanner;
 
 /**
@@ -10,6 +11,28 @@ import java.util.Scanner;
  */
 public class Brute {
     private String pat;
+
+    private static class CharBuffer {
+        char[] buffer;
+        int size;       // size of buffer
+        int first;      // first char in buffer
+        int last;       // 1 char after the last char in buffer, position to add a new char
+        public CharBuffer(int size) {
+            this.size = size + 1;
+            buffer = new char[this.size];
+        }
+        public char read(int i) {
+            return buffer[(first + i) % size];
+        }
+        public void add(char c) {
+            buffer[last++] = c;
+            last %= size;
+        }
+        public void remove() {
+            buffer[first++] = 0;
+            first %= size;
+        }
+    }
 
     public Brute(String pat) {
         this.pat = pat;
@@ -32,6 +55,27 @@ public class Brute {
             if (j == M) return i;
         }
         return N;
+    }
+
+    public Iterable<Integer> search(InputStream in) {
+        Scanner scanner = new Scanner(in);
+        scanner.useDelimiter("");
+        Queue<Integer> queue = new Queue<>();
+        int M = pat.length();
+        int i = 0;
+        CharBuffer buffer = new CharBuffer(M);
+        for (int j = 0; j < M && scanner.hasNext(); j++)
+            buffer.add(scanner.next().charAt(0));
+        while (true) {
+            int j = 0;
+            while (j < M && pat.charAt(j) == buffer.read(j)) j++;
+            if (j == M) queue.enqueue(i);
+            buffer.remove();
+            if (!scanner.hasNext()) break;
+            buffer.add(scanner.next().charAt(0));
+            i++;
+        }
+        return queue;
     }
 
     public int count(String txt) {
@@ -58,14 +102,18 @@ public class Brute {
     }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Brute brute = new Brute("ABABAC");
+        for (int i : brute.search(System.in)) {
+            System.out.print(i + " ");
+        }
+        /*Scanner scanner = new Scanner(System.in);
         String txt = scanner.nextLine();
         String pat = scanner.nextLine();
         Brute brute = new Brute(pat);
         print(txt, pat, brute.search(txt));
         System.out.println("count: " + brute.count(txt));
         for (int i : brute.searchAll(txt))
-            System.out.print(i + " ");
+            System.out.print(i + " ");*/
     }
 
     // print text and pattern in a distinguished format
