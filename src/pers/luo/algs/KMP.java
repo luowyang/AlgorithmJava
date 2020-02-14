@@ -1,5 +1,6 @@
 package pers.luo.algs;
 
+import java.io.InputStream;
 import java.util.Scanner;
 
 /**
@@ -9,6 +10,7 @@ import java.util.Scanner;
 public class KMP {
     private String pat;     // pattern string
     private int[][] dfa;    // state-table of DFA
+    private int reboot;
 
     private int R = 256;
 
@@ -33,6 +35,7 @@ public class KMP {
             // update X for j + 1
             X = dfa[pat.charAt(j)][X];
         }
+        reboot = X;
     }
 
     public void setPattern(String pat) {
@@ -52,6 +55,24 @@ public class KMP {
         for (i = offset, j = 0; i < N && j < M; i++)
             j = dfa[txt.charAt(i)][j];
         return j == M ? i - M : N;
+    }
+
+    public Iterable<Integer> search(InputStream in) {
+        Scanner scanner = new Scanner(in);
+        scanner.useDelimiter("");
+        Queue<Integer> queue = new Queue<>();
+        int M = pat.length();
+        int i = 0, j = 0;   // j is the pattern pointer and the current state
+        while (scanner.hasNext()) {
+            String ch = scanner.next();
+            j = dfa[ch.charAt(0)][j];
+            i++;
+            if (j == M) {
+                queue.enqueue(i - M);
+                j = reboot;
+            }
+        }
+        return queue;
     }
 
     public int count(String txt) {
@@ -89,7 +110,11 @@ public class KMP {
     }
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+       KMP kmp = new KMP("ABABAC");
+       for (int i : kmp.search(System.in)) {
+           System.out.print(i + " ");
+       }
+        /*Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String txt = scanner.nextLine();
             String pat = scanner.nextLine();
@@ -98,7 +123,7 @@ public class KMP {
             System.out.println("count: " + kmp.count(txt));
             for (int i : kmp.searchAll(txt))
                 System.out.print(i + " ");
-        }
+        }*/
     }
 
     // print text and pattern in a distinguished format
