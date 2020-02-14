@@ -133,7 +133,7 @@ public class BoyerMoore {
     }
 
     public static void main(String[] args) {
-        BoyerMoore bm = new BoyerMoore("ABABAC");
+        BoyerMoore bm = new BoyerMoore("it is a far far better thing that i do than i have ever done");
         for (int i : bm.search(System.in)) {
             System.out.print(i + " ");
         }

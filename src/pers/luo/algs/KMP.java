@@ -110,7 +110,7 @@ public class KMP {
     }
 
     public static void main(String[] args) {
-       KMP kmp = new KMP("ABABAC");
+       KMP kmp = new KMP("it is a far far better thing that i do than i have ever done");
        for (int i : kmp.search(System.in)) {
            System.out.print(i + " ");
        }

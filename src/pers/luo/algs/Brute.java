@@ -101,7 +101,7 @@ public class Brute {
     }
 
     public static void main(String[] args) {
-        Brute brute = new Brute("ABABAC");
+        Brute brute = new Brute("it is a far far better thing that i do than i have ever done");
         for (int i : brute.search(System.in)) {
             System.out.print(i + " ");
         }
