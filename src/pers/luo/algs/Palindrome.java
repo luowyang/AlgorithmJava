@@ -41,10 +41,13 @@ public class Palindrome {
     }
 
     public static void main(String[] args) {
-        String s= generateString(21);
-        Palindrome p = new Palindrome();
-        System.out.println(s);
-        System.out.println("is palindrome: " + p.isPalindrome(s));
+        int T = Integer.parseInt(args[0]);
+        for (int i = 0; i < T; i++) {
+            String s = generateString(21);
+            Palindrome p = new Palindrome();
+            System.out.println(s);
+            System.out.println("is palindrome: " + p.isPalindrome(s));
+        }
     }
 
     private static String generateString(int N) {
