@@ -1,7 +1,5 @@
 package pers.luo.algs;
 
-import java.util.Scanner;
-
 public class DepthFirstSearch {
     private boolean[] marked;
     private int count;
