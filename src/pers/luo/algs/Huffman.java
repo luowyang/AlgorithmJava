@@ -3,6 +3,10 @@ package pers.luo.algs;
 import edu.princeton.cs.algs4.BinaryOut;
 import edu.princeton.cs.algs4.BinaryStdIn;
 
+/**
+ * Huffman encoding compression algorithm
+ * @author Luo Wenyang
+ */
 public class Huffman {
     private static final int R = 256;
 
