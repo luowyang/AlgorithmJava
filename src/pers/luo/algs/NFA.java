@@ -5,9 +5,17 @@ import java.util.Scanner;
 /**
  * Regular expression matching using Nondeterministic Finite Automaton
  *
+ * Supported regular expression ops:
+ * 1. concatenation, or and basic closure
+ * 2. wildcard .
+ * 3. +
+ * 4. {n}, {n,} and {n,m}
+ *
  * Some rules for regular expressions:
  * 1. No {,m}
  * 2. No * or + after {}
+ *
+ * //TODO: add support for [] and [^]
  *
  * @author Luo Wenyang
  */
