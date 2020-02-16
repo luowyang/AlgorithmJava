@@ -9,6 +9,7 @@ import java.io.*;
  *
  * @author Luo Wenyang
  */
+@SuppressWarnings("unchecked")
 public class PageSet<Key extends Comparable<Key>> implements java.io.Serializable {
     private static final int M = 500;  // node capacity
     private boolean isLeaf;             // true if external, false if internal
@@ -22,6 +23,24 @@ public class PageSet<Key extends Comparable<Key>> implements java.io.Serializabl
         public Link(String id, PageSet<Key> next) {
             this.id = id;
             this.next = next;
+        }
+        // check if the page pointed by the link has been loaded
+        // if the link contains a value, it will always return true
+        public boolean isOpened() {
+            return id == null || next != null;
+        }
+        // open the page pointed by this link
+        // if not already opened, this method will load the page from disk
+        public PageSet<Key> open() throws IOException, ClassNotFoundException {
+            if (isOpened()) return next;
+            FileInputStream fileIn = new FileInputStream(getFilename(id));
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            PageSet<Key> page = (PageSet<Key>) in.readObject();
+            next = page;
+            in.close();
+            fileIn.close();
+            System.out.println("Page " + page.id + " has been loaded");
+            return page;
         }
     }
 
@@ -61,25 +80,14 @@ public class PageSet<Key extends Comparable<Key>> implements java.io.Serializabl
     }
 
     public boolean contains(Key key) {
-        if (isLeaf) return keys.contains(key);
-        PageSet<Key> next = keys.get(keys.floor(key)).next;
-        return next.contains(key);
+        if (!isLeaf) throw new UnsupportedOperationException("Cannot check value in an internal node");
+        return keys.contains(key);
     }
 
     public PageSet<Key> next(Key key) throws IOException, ClassNotFoundException {
         if (isLeaf) throw new UnsupportedOperationException("Cannot use next() on an external node");
         Link link = keys.get(keys.floor(key));
-        PageSet<Key> nextPage = link.next;
-        if (nextPage == null) {
-            FileInputStream fileIn = new FileInputStream(getFilename(link.id));
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            nextPage = (PageSet<Key>) in.readObject();
-            link.next = nextPage;
-            in.close();
-            fileIn.close();
-            System.out.println("Page " + nextPage.id + " has been loaded");
-        }
-        return nextPage;
+        return link.open();
     }
 
     public boolean isFull() {
