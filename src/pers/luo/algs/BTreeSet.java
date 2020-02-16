@@ -12,6 +12,7 @@ import java.util.Scanner;
  *
  * @author Luo Wenyang
  */
+@SuppressWarnings("unchecked")
 public class BTreeSet<Key extends Comparable<Key>> implements java.io.Serializable {
     private transient PageSet<Key> root;
     private String rootPath;
@@ -84,17 +85,16 @@ public class BTreeSet<Key extends Comparable<Key>> implements java.io.Serializab
             printTree(page.next(key));
     }
 
-    public void save(String path) throws IOException {
+    /**
+     * IO methods
+     */
+    public void close(String path) throws IOException, ClassNotFoundException {
         rootPath = "./data/BTree/Page" + root.getId() + ".bin";
         FileOutputStream fileOut = new FileOutputStream(path);
         ObjectOutputStream out = new ObjectOutputStream(fileOut);
         out.writeObject(this);
         out.close();
         fileOut.close();
-    }
-
-    public void close(String path) throws IOException, ClassNotFoundException {
-        save(path);
         close(root);
     }
 
