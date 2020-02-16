@@ -5,19 +5,19 @@ import edu.princeton.cs.algs4.StdDraw;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value> {
+public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key, Value>, java.io.Serializable {
     private Node root;
-    private Node cache; // software caching
+    transient private Node cache; // software caching
 
-    private int treeLevel;
+    //private int treeLevel;
 
-    private class Node {
+    private class Node implements java.io.Serializable {
         Key key;
         Value value;
         Node left, right;
         int size;
         int height;
-        double xCoordinate, yCoordinate;
+        //double xCoordinate, yCoordinate;
         public Node(Key key, Value value, int size, int height) {
             this.key = key;
             this.value = value;
@@ -297,11 +297,11 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         st.delete("M");
         for (String s : st.keys())
             System.out.println(s + " " + st.get(s));
-        st.draw();
+        //st.draw();
     }
 
 
-    // below is draw method
+    /*// below is draw method
     public void draw() {
         treeLevel = 0;
         setCoordinates(root, 0.9);
@@ -365,5 +365,5 @@ public class AVLBST<Key extends Comparable<Key>, Value> implements OrderedST<Key
         StdDraw.text(node.xCoordinate, node.yCoordinate, String.valueOf(node.key));
 
         drawNodes(node.right);
-    }
+    }*/
 }
