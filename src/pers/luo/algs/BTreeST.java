@@ -35,7 +35,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         root = (Page<Key, Value>) in.readObject();
         in.close();
         fileIn.close();
-        root.updateSize();
+        root.createLink();
     }
 
     public void put(Key key, Value value) throws IOException, ClassNotFoundException {
@@ -46,6 +46,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
             root = new Page<>(distributeId(), false);
             root.add(leftHalf);
             root.add(rightHalf);
+            // update root's size
             root.updateSize();
         }
     }
@@ -53,12 +54,12 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
     // return whether a new key has been added
     private boolean put(Page<Key, Value> page, Key key, Value value) throws IOException, ClassNotFoundException {
         if (page.isExternal()) {
-            return page.add(key, value);
+            return page.add(key, value);    // leaf will maintain its size
         }
         Page<Key, Value> next = page.next(key);
         boolean newKey = put(next, key, value);
         if (newKey)
-            page.incrementSize(key);       // increment next page's size
+            page.incrementSize();           // maintain this page's size
         if (next.isFull())
             page.add(next.split(distributeId()));
         //next.close();
