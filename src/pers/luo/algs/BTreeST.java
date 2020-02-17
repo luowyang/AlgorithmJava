@@ -12,12 +12,16 @@ import java.util.Scanner;
  */
 @SuppressWarnings("unchecked")
 public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Serializable {
-    private transient Page<Key, Value> root;
-    private String rootPath;
-    private int cnt = 1;
+
+    private String rootPath;                    // path of the root
+    private PagePool pool;
+
+    private transient Page<Key, Value> root;    // root page of the B tree
+    private transient PageCache<Key, Value> cache = new PageCache<>();
 
     public BTreeST(Key sentinel) throws IOException, ClassNotFoundException {
-        root = new Page<>("0000", true);
+        pool = new PagePool();
+        root = new Page<>(pool.fetch(), true);
         put(sentinel, null);
     }
 
@@ -28,7 +32,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         in.close();
         fileIn.close();
         this.rootPath = read.rootPath;
-        this.cnt = read.cnt;
+        this.pool = read.pool;
         // load root page
         fileIn = new FileInputStream(rootPath);
         in = new ObjectInputStream(fileIn);
@@ -42,8 +46,8 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         put(root, key, value);
         if (root.isFull()) {
             Page<Key, Value> leftHalf = root;
-            Page<Key, Value> rightHalf = root.split(distributeId());
-            root = new Page<>(distributeId(), false);
+            Page<Key, Value> rightHalf = root.split(pool.fetch());
+            root = new Page<>(pool.fetch(), false);
             root.add(leftHalf);
             root.add(rightHalf);
             // update root's size
@@ -53,30 +57,36 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
 
     // return whether a new key has been added
     private boolean put(Page<Key, Value> page, Key key, Value value) throws IOException, ClassNotFoundException {
+        if (page == null) throw new RuntimeException("Page is null");
         if (page.isExternal()) {
             return page.add(key, value);    // leaf will maintain its size
         }
         Page<Key, Value> next = page.next(key);
+        cache.visit(next);
         boolean newKey = put(next, key, value);
         if (newKey)
             page.incrementSize();           // maintain this page's size
         if (next.isFull())
-            page.add(next.split(distributeId()));
+            page.add(next.split(pool.fetch()));
         //next.close();
         return newKey;
     }
 
     public Value get(Key key) throws IOException, ClassNotFoundException {
         Page<Key, Value> page = root;
-        while (!page.isExternal())
+        while (!page.isExternal()) {
             page = page.next(key);
+            cache.visit(page);
+        }
         return page.get(key);
     }
 
     public boolean contains(Key key) throws IOException, ClassNotFoundException {
         Page<Key, Value> page = root;
-        while (!page.isExternal())
+        while (!page.isExternal()) {
             page = page.next(key);
+            cache.visit(page);
+        }
         return page.contains(key);
     }
 
@@ -84,25 +94,35 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         return root.size() - 1;     // minus the sentinel
     }
 
+    public boolean isEmpty() {
+        return root.size() == 1;
+    }
+
     public Key min() throws IOException, ClassNotFoundException {
         Page<Key, Value> page = root;
-        while (!page.isExternal())
+        while (!page.isExternal()) {
             page = page.next(page.min());
+            cache.visit(page);
+        }
         return page.select(1);  // minus the sentinel
     }
 
     public Key max() throws IOException, ClassNotFoundException {
         Page<Key, Value> page = root;
-        while (!page.isExternal())
+        while (!page.isExternal()) {
             page = page.next(page.max());
+            cache.visit(page);
+        }
         return page.max();  // minus the sentinel
     }
 
     // key is in [key1, key2) so floor must be in the same interval
     public Key floor(Key key) throws IOException, ClassNotFoundException {
         Page<Key, Value> page = root;
-        while (!page.isExternal())
+        while (!page.isExternal()) {
             page = page.next(key);
+            cache.visit(page);
+        }
         return page.floor(key);
     }
 
@@ -114,6 +134,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         while (!page.isExternal()) {
             candidate = page.ceiling(key);
             page = page.next(key);
+            cache.visit(page);
         }
         Key ceil = page.ceiling(key);
         return ceil == null ? candidate : ceil;
@@ -125,6 +146,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         while (!page.isExternal()) {
             r += page.rank(key);
             page = page.next(key);
+            cache.visit(page);
         }
         return r + page.rank(key) - 1;      // minus the sentinel
     }
@@ -137,29 +159,72 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
             if (key == null) return null;
             k -= page.rank(key);
             page = page.next(key);
+            cache.visit(page);
         }
         return page.select(k);
     }
 
-    public void deleteMin() {
-
+    public void deleteMin() throws IOException, ClassNotFoundException {
+        delete(min());
     }
 
-    public void deleteMax() {
-
+    public void deleteMax() throws IOException, ClassNotFoundException {
+        delete(max());
     }
 
-    public void delete(Key key) {
+    public void delete(Key key) throws IOException, ClassNotFoundException {
+        if (key == null) throw new IllegalArgumentException("Null key");
+        delete(root, key);
+    }
 
+    private boolean delete(Page<Key, Value> page, Key key) throws IOException, ClassNotFoundException {
+        if (page.isExternal()) return page.delete(key);
+        Page<Key, Value> next = page.next(key);
+        cache.visit(next);
+        Key nextMin = next.min();
+        if (!delete(next, key)) return false;
+        page.decrementSize();
+        if (nextMin.compareTo(key) == 0) {  // check if the separator has been deleted
+            nextMin = next.min();
+            page.updateKey(key, nextMin);
+        }
+        Page<Key, Value> sib = page.sibling(nextMin);
+        if (sib == null) {              // next has no sibling, indicating that page is root
+            pool.release(root.getId());
+            root = next;
+            return true;
+        }
+        cache.visit(sib);
+        if (next.lessHalf()) {    // needs merging or transferring
+            Key sibMin = sib.min();
+            if (sib.isHalf()) {             // needs merging
+                next.merge(sib);
+                page.delete(sibMin);
+                page.updateKey(nextMin, next.min());
+                cache.remove(sib);
+                pool.release(sib.getId());
+            }
+            else {                          // needs transferring
+                sib.transfer(next);
+                if (nextMin.compareTo(sibMin) < 0)
+                    page.updateKey(sibMin, sib.min());
+                else
+                    page.updateKey(nextMin, next.min());
+            }
+        }
+        return true;
     }
 
     public Iterable<Key> keys(Key lo, Key hi) throws IOException, ClassNotFoundException {
         Queue<Key> queue = new Queue<>();
         collect(root, lo, hi, queue);
+        queue.dequeue();    // delete the sentinel
         return queue;
     }
 
     private void collect(Page<Key, Value> page, Key lo, Key hi, Queue<Key> queue) throws IOException, ClassNotFoundException {
+        if (page == null) throw new RuntimeException("Page is null");
+        cache.visit(page);
         if (page.isExternal()) {
             for (Key key : page.keys())
                 if (key.compareTo(lo) >= 0 && key.compareTo(hi) <= 0)
@@ -175,15 +240,11 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         return keys(min(), max());
     }
 
-    private String distributeId() {
-        return String.format("%04d", cnt++);
-    }
-
     /**
      * IO methods
      */
     public void close(String path) throws IOException, ClassNotFoundException {
-        rootPath = "./data/BTree/Page" + root.getId() + ".bin";
+        rootPath = String.format("./data/BTree/Page%04d.bin", root.getId());
         FileOutputStream fileOut = new FileOutputStream(path);
         ObjectOutputStream out = new ObjectOutputStream(fileOut);
         out.writeObject(this);
@@ -193,10 +254,15 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
     }
 
     private void close(Page<Key, Value> page) throws IOException, ClassNotFoundException {
-        page.close();
-        if (page.isExternal()) return;
+        if (page.isExternal()) {
+            page.close();
+            cache.remove(page);
+            return;
+        }
         for (Key key : page.keys())
-            close(page.next(key));
+            if (page.probe(key)) close(page.next(key));
+        page.close();
+        cache.remove(page);
     }
 
     /**
@@ -231,6 +297,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
         System.out.println("min: " + btree.min());
         // test max()
         System.out.println("max: " + btree.max());
+        btree.cache.printPages();
         // test floor()
         System.out.println("test floor():");
         while (scanner.hasNextLine()) {
@@ -238,6 +305,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
             if (s.equals("exit")) break;
             System.out.println("  floor: " + btree.floor(s));
         }
+        btree.cache.printPages();
         // test ceiling()
         System.out.println("test ceiling():");
         while (scanner.hasNextLine()) {
@@ -259,6 +327,14 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
             if (s.equals("exit")) break;
             System.out.println("  select: " + btree.select(Integer.parseInt(s)));
         }
+        // test delete()
+        System.out.println("test delete():");
+        while (scanner.hasNextLine()) {
+            String s = scanner.nextLine();
+            if (s.equals("exit")) break;
+            btree.delete(s);
+            btree.printTree();
+        }
         while (scanner.hasNextLine()) {
             String s = scanner.nextLine();
             if (s.equals("exit")) break;
@@ -267,6 +343,7 @@ public class BTreeST<Key extends Comparable<Key>, Value> implements java.io.Seri
             else
                 System.out.println("  no record");
         }
+        btree.close(path);
     }
 
     private static BTreeST<String, Integer> buildTree(String path, String filename) throws IOException, ClassNotFoundException {
