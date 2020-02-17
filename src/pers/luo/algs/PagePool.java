@@ -1,6 +1,5 @@
 package pers.luo.algs;
 
-import javax.print.DocFlavor;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -74,9 +73,9 @@ public class PagePool implements java.io.Serializable {
      */
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        out.write(size);
+        out.writeInt(size);
         for (Node node = sent.next; node != sent; node = node.next)
-            out.write(node.id);
+            out.writeInt(node.id);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
