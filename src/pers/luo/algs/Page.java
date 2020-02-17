@@ -11,15 +11,16 @@ import java.io.*;
  */
 @SuppressWarnings("unchecked")
 public class Page<Key extends Comparable<Key>, Value> implements java.io.Serializable {
-    private static final int M = 500;  // node capacity
+    private transient static final int M = 500;   // node capacity
     private boolean isLeaf;             // true if external, false if internal
-    private AVLBST<Key, Link> keys;     // binary search tree to store keys
+    private AVLBST<Key, Link<Key, Value>> keys;     // binary search tree to store keys
     private String id;                  // id of this page
-    private static String path = "./data/BTree/Page";
+    private transient static final String path = "./data/BTree/Page";
 
-    private transient int n;     // only used to split nodes
+    private transient Link<Key, Value> ref;         // reference to parent's link to this
 
-    private class Link implements java.io.Serializable {
+    private static class Link<Key extends Comparable<Key>, Value> implements java.io.Serializable {
+        transient static String path = "./data/BTree/Page";
         String id;
         transient Page<Key, Value> next;
         Value value;
@@ -28,7 +29,9 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
             this.id = id;           // id of the next page, null if the link contains a value
             this.next = next;       // pointer to the next page, null if no next or unloaded
             this.value = value;     // value is null for internal links
-            this.size = size;
+            this.size = size;       // set size
+            // update page's ref if page is not null
+            if (next != null) next.ref = this;
         }
         // check if the page pointed by the link has been loaded
         // if the link contains a value, it will always return true
@@ -39,23 +42,25 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
         // if not already opened, this method will load the page from disk
         public Page<Key, Value> open() throws IOException, ClassNotFoundException {
             if (isOpened()) return next;
-            FileInputStream fileIn = new FileInputStream(getFilename(id));
+            FileInputStream fileIn = new FileInputStream(path + id + ".bin");
             ObjectInputStream in = new ObjectInputStream(fileIn);
             Page<Key, Value> page = (Page<Key, Value>) in.readObject();
             in.close();
             fileIn.close();
-            System.out.println("Page " + page.id + " has been loaded");
+            System.out.println("(DEBUG: Page " + page.id + " has been loaded)");
             next = page;
-            page.n = size;
+            page.ref = this;        // update link ref
             return page;
         }
     }
 
-    // create and open a page
+    // create and open a page, also create an associated link
     public Page(String id, boolean bottom) {
         this.id = id;
         isLeaf = bottom;
         keys = new AVLBST<>();
+        // create associated link
+        ref = new Link<>(id, this, null, 0);
     }
 
     // close and write a page back
@@ -73,8 +78,8 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
     public boolean add(Key key, Value value) {
         if (!isLeaf) throw new UnsupportedOperationException("Cannot add keys to an internal node");
         if (!keys.contains(key)) {
-            keys.put(key, new Link(null, null, value, 1));
-            n++;
+            keys.put(key, new Link<>(null, null, value, 1));
+            ref.size++;
             return true;
         }
         keys.get(key).value = value;
@@ -86,7 +91,8 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
     // no need to increment its size
     public void add(Page<Key, Value> page) {
         Key minKey = page.keys.min();
-        keys.put(minKey, new Link(page.id, page, null, page.n));
+        keys.put(minKey, page.ref);
+        //page.updateSize();
     }
 
     // is this an external page
@@ -97,7 +103,7 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
     // get the value associated with the key in this external page
     public Value get(Key key) {
         if (!isLeaf) throw new UnsupportedOperationException("Cannot get value from an internal node");
-        Link link = keys.get(key);
+        Link<Key, Value> link = keys.get(key);
         if (link == null) return null;  // key does not exist
         assert link.value != null;
         return link.value;
@@ -113,7 +119,7 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
     // if not in memory, then load the next page from given path
     public Page<Key, Value> next(Key key) throws IOException, ClassNotFoundException {
         if (isLeaf) return null;
-        Link link = keys.get(keys.floor(key));
+        Link<Key, Value> link = keys.get(keys.floor(key));
         return link.open();
     }
 
@@ -127,12 +133,14 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
         Page<Key, Value> newPage = new Page<>(newId, isLeaf);
         for (int i = 0; i < M; i += 2) {
             Key key = keys.max();           // get the max key
-            Link link = keys.get(key);      // get the link of the max key
+            Link<Key, Value> link = keys.get(key);      // get the link of the max key
             keys.delete(key);               // remove max key from left half
             newPage.keys.put(key, link);
-            newPage.n += size(link);         // get the size of the subtree
+            newPage.ref.size += size(link); // update size
         }
-        n -= newPage.n;
+        // update this page's size
+        // this.updateSize();
+        ref.size -= newPage.ref.size;
         return newPage;
     }
 
@@ -141,23 +149,33 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
     }
 
     public int size() {
-        return n;
+        if (ref == null) throw new UnsupportedOperationException("Link is null");
+        return ref.size;
+        /*int size = 0;
+        for (Key key : keys.keys())
+            size += size(keys.get(key));
+        return size;*/
     }
 
-    private int size(Link link){
+    private int size(Link<Key, Value> link){
+        if (link == null) throw new IllegalArgumentException("Link is null");
         return link.size;
     }
 
-    public void incrementSize(Key key) {
-        if (isLeaf) throw new UnsupportedOperationException("Cannot increment link size in an external node");
-        Link link = keys.get(keys.floor(key));
-        link.size++;
+    public void incrementSize() {
+        ref.size++;
     }
 
     public void updateSize(){
-        n = 0;
+        if (ref == null) throw new UnsupportedOperationException("Link to current page not found");
+        ref.size = 0;
         for (Key key : keys.keys())
-            n += size(keys.get(key));
+            ref.size += size(keys.get(key));
+    }
+
+    public void createLink() {
+        new Link<>(id, this, null, 0);
+        this.updateSize();
     }
 
     public Key floor(Key key) {
@@ -212,5 +230,14 @@ public class Page<Key extends Comparable<Key>, Value> implements java.io.Seriali
 
     private String getFilename(String id) {
         return path + id + ".bin";
+    }
+
+    public static void main(String[] args) {
+        Page<String, Integer> page = new Page<>("0", true);
+        page.createLink();
+        page.add("ha", 1);
+        System.out.println(page.isExternal());
+        page.incrementSize();
+        System.out.println(page.ceiling("h"));
     }
 }
