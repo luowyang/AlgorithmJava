@@ -46,6 +46,7 @@ public class PageCache<Key extends Comparable<Key>, Value> {
             moveToFront(st.get(page));
         else
             insert(page);
+        //System.out.println(String.format("(DEBUG: page %d is visited)", page.getId()));
     }
 
     private void insert(Page<Key, Value> page) {
@@ -75,6 +76,7 @@ public class PageCache<Key extends Comparable<Key>, Value> {
     public void remove(Page<Key, Value> page) {
         if (!st.contains(page)) return;
         remove(st.get(page));
+        //System.out.println(String.format("(DEBUG: page %d is removed)", page.getId()));
     }
 
     private void remove(Node<Key, Value> node) {
