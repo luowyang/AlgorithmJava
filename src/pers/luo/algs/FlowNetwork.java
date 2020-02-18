@@ -1,6 +1,7 @@
 package pers.luo.algs;
 
 import java.io.InputStream;
+import java.util.Scanner;
 
 /**
  * Flow network
@@ -20,9 +21,21 @@ public class FlowNetwork {
             adj[v] = new Bag<>();
     }
 
-    /*public FlowNetwork(InputStream in) {
-
-    }*/
+    public FlowNetwork(InputStream in) {
+        Scanner scanner = new Scanner(in);
+        V = scanner.nextInt();  // read V
+        // initialize adjacent lists
+        adj = (Bag<FlowEdge>[]) new Bag[V];
+        for (int v = 0; v < V; v++)
+            adj[v] = new Bag<>();
+        int E = scanner.nextInt();  // read E, do not manipulate this.E manually
+        for (int i = 0; i < E; i++) {
+            int v = scanner.nextInt();              // read v
+            int w = scanner.nextInt();              // read w
+            double cap = scanner.nextDouble();   // read weight
+            addEdge(v, w, cap);
+        }
+    }
 
     public int V() {
         return V;
@@ -32,16 +45,16 @@ public class FlowNetwork {
         return E;
     }
 
-    // add new edge v-w with weight
-    public void addEdge(int v, int w, double weight) {
+    // add new flow edge v->w with cap
+    public void addEdge(int v, int w, double cap) {
         if (v < 0 || v >= V) throw new IllegalArgumentException("First vertex out of range");
         if (w < 0 || w >= V) throw new IllegalArgumentException("Second vertex out of range");
-        addEdge(new FlowEdge(v, w, weight));
+        addEdge(new FlowEdge(v, w, cap));
     }
 
     public void addEdge(FlowEdge e) {
         int v = e.from();     // get one vertex
-        int w = e.other(v);     // get the other vertex
+        int w = e.to();     // get the other vertex
         adj[v].add(e);          // add new edge to v's adjacent list
         adj[w].add(e);          // add new edge to w's adjacent list
         E++;                    // increment edge counter
