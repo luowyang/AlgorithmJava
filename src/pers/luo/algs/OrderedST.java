@@ -19,6 +19,5 @@ public interface OrderedST<Key extends Comparable<Key>, Value> extends ST<Key, V
             return rank(hi) - rank(lo);
     }
     Iterable<Key> keys(Key lo, Key hi);   // sorted keys in range [lo..hi]
-    default Iterable<Key> keys()
-    { return keys(min(), max()); }
+    default Iterable<Key> keys() { return keys(min(), max()); }
 }
