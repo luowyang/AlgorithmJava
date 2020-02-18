@@ -25,38 +25,18 @@ public class Quick {
     private static void sort3way(Comparable[] a, int lo, int hi)
     {
         if (lo + M >= hi) { Insertion.sort(a, lo, hi); return; }   // basic situation
-        int p = lo;
-        int q = hi + 1;
+        int lt = lo - 1;
+        int gt = hi + 1;
         int i = lo;
-        int j = hi + 1;
         Comparable pivot = a[lo];
-        while (true) {
-            while (a[++i].compareTo(pivot) < 0) if (i == hi) break;
-            while (a[--j].compareTo(pivot) > 0) if (j == lo) break;
-            if (i >= j) break;
-            if (a[i].equals(pivot)) Util.exch(a, ++p, i);
-            if (a[j].equals(pivot)) Util.exch(a, --q, j);
-            if (i >= j) break;
-            Util.exch(a, i, j);
+        while (i < gt) {
+            int cmp = a[i].compareTo(pivot);
+            if      (cmp < 0) Util.exch(a, ++lt, i++);
+            else if (cmp > 0) Util.exch(a, --gt, i);
+            else                                i++;
         }
-        while (p >= lo) Util.exch(a, p--, i--);
-        while (q <= hi) Util.exch(a, q++, j++);
-        sort3way(a, lo, i);
-        sort3way(a, j, hi);
-        /*if (lo + M >= hi) { Insertion.sort(a, lo, hi); return; }   // basic situation
-        int p = lo;
-        int i = lo;
-        int j = lo + 1;
-        Comparable pivot = a[lo];
-        while (j <= hi) {
-            if      (a[j].compareTo(pivot) < 0) exch(a, ++i, j++);
-            else if (a[j].compareTo(pivot) > 0) j++;
-            else                                { exch(a, ++p, j); exch(a, ++i, j++); }
-        }
-        j = i;
-        while (p >= lo) exch(a, p--, i--);
-        sort3way(a, lo, i);
-        sort3way(a, j+1, hi);*/
+        sort3way(a, lo, lt);
+        sort3way(a, gt, hi);
     }
 
     public static Comparable select(Comparable[] a, int k)
@@ -151,8 +131,8 @@ public class Quick {
     public static void main(String[] args)
     {
         String[] a = StdIn.readAllStrings();
-        int k = (a.length - 1)/2;
-        System.out.println(k + "-th sequential statistic is " + select(a, k));
+        //int k = (a.length - 1)/2;
+        //System.out.println(k + "-th sequential statistic is " + select(a, k));
         sort(a);
         System.out.println("is sorted: " + Util.isSorted(a));
         Util.show(a);
