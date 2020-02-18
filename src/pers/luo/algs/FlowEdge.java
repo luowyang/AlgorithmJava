@@ -38,17 +38,16 @@ public class FlowEdge implements Comparable<FlowEdge> {
         return flow;
     }
 
-    // forward: how much can we increase until full
-    // backward: how much can we decrease until empty
+    // residual capacity of the edge going to vertex
     public double residualCapacityTo(int vertex) {
-        if      (vertex == v) return capacity - flow;
-        else if (vertex == w) return flow;
+        if      (vertex == v) return flow;
+        else if (vertex == w) return capacity - flow;
         else throw new IllegalArgumentException("Inconsistent edge");
     }
 
-    // add residual flow delta to the edge
-    // forward: increase flow，vertex must be tail
-    // backward: decrease flow, vertex must be head
+    // add residual flow delta to the edge going to vertex
+    // forward: increase flow
+    // backward: decrease flow
     public void addResidualFlowTo(int vertex, double delta) {
         if      (vertex == v) flow -= delta;
         else if (vertex == w) flow += delta;
