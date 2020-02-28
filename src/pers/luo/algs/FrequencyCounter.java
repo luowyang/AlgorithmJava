@@ -1,11 +1,32 @@
 package pers.luo.algs;
 
-import edu.princeton.cs.algs4.RedBlackBST;
 import javafx.scene.paint.Stop;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 public class FrequencyCounter {
+    public static class Benchmark<Key extends Comparable<Key>, Value> implements ST<Key, Value> {
+        private TreeMap<Key, Value> map = new TreeMap<>();
+        public Value get(Key key) {
+            return map.get(key);
+        }
+        public void put(Key key, Value value) {
+            map.put(key, value);
+        }
+        public boolean contains(Key key) {
+            return map.containsKey(key);
+        }
+        public int size() {
+            return map.size();
+        }
+        public Iterable<Key> keys() {
+            return map.keySet();
+        }
+    }
+
     private static ST<String, Integer> getST(String alg)
     {
         switch (alg) {
@@ -17,6 +38,8 @@ public class FrequencyCounter {
                 return new BST<>();
             case "LLRB":
                 return new LLRedBlackBST<>();
+            case "RB":
+                return new RedBlackBST<>();
             case "TTF":
                 return new TTFBST<>();
             case "AVL":
@@ -27,6 +50,8 @@ public class FrequencyCounter {
                 return new LinearProbingHashST<>(99997);
             case "AVLSCH":
                 return new AVLSCHST<>(99997);
+            case "Benchmark":
+                return new Benchmark<>();
             default:
                 throw new IllegalArgumentException("Unknown algorithm " + alg);
         }
