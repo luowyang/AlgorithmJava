@@ -223,10 +223,10 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> implements OrderedS
                         cur.color = RED;
                         cur.left.color = BLACK;
                         rotateRight(cur);
-                        cur = node.parent.right;    // cur is node's new brother
+                        cur = cur.parent;    // cur is node's new brother
                     }
                     // case 4, remove extra black by lending a black link from node's brother
-                    node = node.parent;
+                    node = cur.parent;
                     cur.color = node.color;
                     node.color = BLACK;
                     cur.right.color = BLACK;        // absorb a black link
@@ -255,10 +255,10 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> implements OrderedS
                         cur.color = RED;
                         cur.right.color = BLACK;
                         rotateLeft(cur);
-                        cur = node.parent.left;    // cur is node's new brother
+                        cur = cur.parent;    // cur is node's new brother
                     }
                     // case 4, remove extra black by lending a black link from node's brother
-                    node = node.parent;
+                    node = cur.parent;
                     cur.color = node.color;
                     node.color = BLACK;
                     cur.left.color = BLACK;         // absorb a black link
