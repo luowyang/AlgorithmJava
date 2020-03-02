@@ -48,9 +48,10 @@ public class GrahamScan {
                 stack.pop();
             stack.push(points[i]);
         }
-        this.x = new double[stack.size()];
-        this.y = new double[stack.size()];
-        for (int i = 0; i < this.x.length; i++) {
+        int m = stack.size();
+        this.x = new double[m];
+        this.y = new double[m];
+        for (int i = 0; i < m; i++) {
             Point p = stack.pop();
             this.x[i] = p.x + x[ref];
             this.y[i] = p.y + y[ref];
