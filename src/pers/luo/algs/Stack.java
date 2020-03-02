@@ -65,6 +65,13 @@ public class Stack<Item> implements Iterable<Item> {
         return top.item;
     }
 
+    public Item peekSecond() {
+        Node<Item> node = top;
+        node = (node == null ? null : node.next);
+        if (node == null) throw new NoSuchElementException("Stack underflow");
+        return node.item;
+    }
+
     private class ListIterator implements Iterator<Item> {
         private Node<Item> current= top;  // current indicates which element to be took
 
