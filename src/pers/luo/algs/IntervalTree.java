@@ -1,7 +1,5 @@
 package pers.luo.algs;
 
-import edu.princeton.cs.algs4.In;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -30,21 +28,31 @@ public class IntervalTree {
         }
     }
 
-    private final Node nil = new Node(null, Double.MIN_VALUE, BLACK, null, null, null);
-    private Node root = nil;
+    private Node root = null;
+
+    private double max(Node node) {
+        return node == null ? 0.0 : node.max;
+    }
+
+    private boolean color(Node node) {
+        return node == null ? BLACK : node.color;
+    }
 
     private void updateMax(Node node) {
-        node.max = Math.max(node.left.max, node.right.max);
+        assert node != null;
+        node.max = Math.max(max(node.left), max(node.right));
         node.max = Math.max(node.max, node.interval.high());
     }
 
     private void rotateLeft(Node node) {
+        assert node != null;
         Node x = node.right;
+        assert x != null;
         // deal with x.left
         node.right = x.left;
-        node.right.parent = node;
+        if (node.right != null) node.right.parent = node;
         // deal with node.parent
-        if      (node.parent == nil)       root = x;
+        if      (node.parent == null)      root = x;
         else if (node == node.parent.left) node.parent.left = x;
         else                               node.parent.right = x;
         x.parent = node.parent;
@@ -57,12 +65,14 @@ public class IntervalTree {
     }
 
     private void rotateRight(Node node) {
+        assert node != null;
         Node x = node.left;
+        assert x != null;
         // deal with x.right
         node.left = x.right;
-        node.left.parent = node;
+        if (node.left != null) node.left.parent = node;
         // deal with node.parent
-        if      (node.parent == nil)       root = x;
+        if      (node.parent == null)      root = x;
         else if (node == node.parent.left) node.parent.left = x;
         else                               node.parent.right = x;
         x.parent = node.parent;
@@ -75,10 +85,10 @@ public class IntervalTree {
     }
 
     public void put(Interval interval) {
-        Node pre = nil;
+        Node pre = null;
         Node cur = root;
         int cmp = 0;
-        while (cur != nil) {
+        while (cur != null) {
             pre = cur;
             cmp = interval.compareTo(cur.interval);
             if      (cmp < 0) cur = cur.left;
@@ -86,22 +96,22 @@ public class IntervalTree {
             else              return;
         }
         // create new node
-        cur = new Node(interval, interval.high(), RED, nil, nil, pre);
-        if      (pre == nil) root = cur;
-        else if (cmp < 0   ) pre.left = cur;
-        else                 pre.right = cur;
+        cur = new Node(interval, interval.high(), RED, null, null, pre);
+        if      (pre == null) root = cur;
+        else if (cmp < 0    ) pre.left = cur;
+        else                  pre.right = cur;
         // fix up
         insertFixUp(cur);
     }
 
     private void insertFixUp(Node node) {
         Node x = node.parent;
-        while (x.color == RED) {
+        while (color(x) == RED) {
             updateMax(x);
             updateMax(x.parent);
             if (x == x.parent.left) {   // left cases
                 x = x.parent.right;
-                if (x.color == BLACK) {
+                if (color(x) == BLACK) {
                     if (node == node.parent.right) {
                         // case 2
                         node = node.parent;
@@ -117,7 +127,7 @@ public class IntervalTree {
                 }
             } else {    // right cases
                 x = x.parent.left;
-                if (x.color == BLACK) {
+                if (color(x) == BLACK) {
                     if (node == node.parent.left) {
                         // case 2
                         node = node.parent;
@@ -140,7 +150,7 @@ public class IntervalTree {
             node.color = RED;
             x = node.parent;
         }
-        for (; x != nil; x = x.parent) {
+        for (; x != null; x = x.parent) {
             double originalMax = x.max;
             updateMax(x);
             if (x.max == originalMax) break;
@@ -150,81 +160,68 @@ public class IntervalTree {
 
     public void delete(Interval interval) {
         Node z = root;
-        while (z != nil) {
+        while (z != null) {
             int cmp = interval.compareTo(z.interval);
             if      (cmp < 0) z = z.left;
             else if (cmp > 0) z = z.right;
             else              break;
         }
-        if (z == nil) return;
-        Node x;
-        Node y = z;
-        boolean originalColor = y.color;
-        if (z.left == nil) {
-            x = z.right;
-            transplant(x, z);
-        } else if (z.right == nil) {
-            x = z.left;
-            transplant(x, z);
-        } else {
+        if (z == null) return;
+        Node y = z;     // y is the node to be removed
+        if (z.left != null && z.right != null) {
+            // replace z with y
             y = min(z.right);
-            originalColor = y.color;
-            x = y.right;
-            if (y.parent == z) {
-                x.parent = y;   // make sure that fix up will work properly
-            } else {
-                transplant(x, y);
-                y.right = z.right;
-                y.right.parent = y;
-            }
-            y.left = z.left;
-            y.left.parent = y;
-            y.color = z.color;
-            y.max = z.max;
+            z.interval = y.interval;
         }
-        if (originalColor == BLACK) deleteFixUp(x);
-        else {      // only update max
-            for (x = x.parent; x != nil; x = x.parent) {
-                double originalMax = x.max;
-                updateMax(x);
-                if (x.max == originalMax) break;
-            }
+        Node x = (y.left == null ? y.right : y.left);   // x is the only child of y
+        if (x != null) {
+            // replace y with x
+            x.parent = y.parent;
+            if      (y.parent == null)   root = x;
+            else if (y == y.parent.left) y.parent.left = x;
+            else                         y.parent.right = x;
+            if (y.color == BLACK) deleteFixUp(x);
+            x = x.parent;
+        } else if (y.parent == null) {
+            // y is the only node
+            root = null;
+        } else {
+            // use y as phantom
+            if (y.color == BLACK) deleteFixUp(y);
+            x = y.parent;
+            // replace y with null
+            if      (y.parent == null)   root = null;
+            else if (y == y.parent.left) y.parent.left = null;
+            else                         y.parent.right = null;
         }
-        for (; y != nil; y = y.parent) {
-            double originalMax = y.max;
-            updateMax(y);
-            if (y.max == originalMax) break;
+        for (; x != null; x = x.parent) {
+            double originalMax = x.max;
+            updateMax(x);
+            if (x.max == originalMax) break;
         }
-    }
-
-    private void transplant(Node s, Node t) {
-        if      (t.parent == nil   ) root = s;
-        else if (t == t.parent.left) t.parent.left = s;
-        else                         t.parent.right = s;
-        s.parent = t.parent;
     }
 
     private void deleteFixUp(Node node) {
+        assert node != null;
         while (node != root && node.color == BLACK) {
             Node x = node.parent;
-            updateMax(x);
             if (node == x.left) {           // left cases
-                x = x.right;                // x may be nil
-                if (x.color == RED) {
+                x = x.right;                // x may not be null
+                if (color(x) == RED) {
                     // case 1, convert to case 2, 3 or 4
-                    x.color = BLACK;      // node.parent.color must be black by Property 2
+                    x.color = BLACK;            // node.parent.color must be black by Property 2
                     node.parent.color = RED;
                     rotateLeft(node.parent);
-                    x = node.parent.right;    // update cur to point to node's brother
+                    x = node.parent.right;      // update x to point to node's brother, x may not be null
                 }
-                if (x.left.color == BLACK && x.right.color == BLACK) {
+                if (color(x.left) == BLACK && color(x.right) == BLACK) {
                     // case 2, pull black from node and its brother to node's parent
                     x.color = RED;
                     node = node.parent;
                 }
                 else {
                     // node's brother must has at least one red child
-                    if (x.right.color == BLACK) {
+                    if (color(x.right) == BLACK) {
                         // case 3, move red link to right
                         x.color = RED;
                         x.left.color = BLACK;
@@ -241,23 +238,23 @@ public class IntervalTree {
                 }
             }
             else {                          // right cases
-                x = x.left;             // cur may be nil
-                if (x.color == RED) {
+                x = x.left;                 // x may not be null
+                if (color(x) == RED) {
                     // case 1, convert to case 2, 3 or 4
-                    x.color = BLACK;      // node.parent.color must be black by Property 2
+                    x.color = BLACK;            // node.parent.color must be black by Property 2
                     node.parent.color = RED;
                     rotateRight(node.parent);
-                    x = node.parent.left;     // update cur to point to node's brother
+                    x = node.parent.left;       // update x to point to node's brother, x may not be null
                 }
-                if (x.left.color == BLACK && x.right.color == BLACK) {
+                if (color(x.left) == BLACK && color(x.right) == BLACK) {
                     // case 2, pull black from node and its brother to node's parent
                     x.color = RED;
                     node = node.parent;
                 }
                 else {
                     // node's brother must has at least one red child
-                    if (x.left.color == BLACK) {
-                        // case 3, move red link to left
+                    if (color(x.left) == BLACK) {
+                        // case 3, move red link to right
                         x.color = RED;
                         x.right.color = BLACK;
                         rotateLeft(x);
@@ -267,34 +264,29 @@ public class IntervalTree {
                     node = x.parent;
                     x.color = node.color;
                     node.color = BLACK;
-                    x.left.color = BLACK;         // absorb a black link
+                    x.left.color = BLACK;        // absorb a black link
                     rotateRight(node);
                     break;
                 }
             }
         }
         node.color = BLACK;
-        for (node = node.parent; node != nil; node = node.parent) {
-            double originalMax = node.max;
-            updateMax(node);
-            if (node.max == originalMax) break;
-        }
     }
 
     private Node min(Node node) {
-        if (node == nil) return null;
-        while (node.left != nil) node = node.left;
+        assert node != null;
+        while (node.left != null) node = node.left;
         return node;
     }
 
     public Interval search(Interval interval) {
         Node x = root;
-        while (x != nil) {
+        while (x != null) {
             if (x.interval.overlaps(interval)) return x.interval;
-            if (x.left == nil || interval.low() > x.left.max) x = x.right;
+            if (x.left == null || interval.low() > x.left.max) x = x.right;
             else x = x.left;
         }
-        return x.interval;
+        return null;
     }
 
     public void print() {
@@ -303,7 +295,7 @@ public class IntervalTree {
     }
 
     private void print(Node node) {
-        if (node == nil) {
+        if (node == null) {
             System.out.print("- ");
             return;
         }
