@@ -55,7 +55,7 @@ public class Queue<Item> implements Iterable<Item> {
         if (isEmpty()) throw new NoSuchElementException("Queue underflow");
         Item item = first.item;
         first = first.next;
-        if (isEmpty()) last = null;
+        if (first == null) last = null;
         N--;
         return item;
     }
