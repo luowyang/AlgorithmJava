@@ -289,6 +289,33 @@ public class IntervalTree {
         return null;
     }
 
+    public Interval searchMin(Interval interval) {
+        Node x = root;
+        Interval candidate = null;
+        while (x != null) {
+            if (x.interval.overlaps(interval)) candidate =  x.interval;
+            if (x.left == null || interval.low() > x.left.max) x = x.right;
+            else x = x.left;
+        }
+        return candidate;
+    }
+
+    public Iterable<Interval> searchAll(Interval interval) {
+        Queue<Interval> queue = new Queue<>();
+        collectOverlaps(root, interval, queue);
+        return queue;
+    }
+
+    private void collectOverlaps(Node node, Interval interval, Queue<Interval> queue) {
+        if (node == null) return;
+        if (node.left != null && interval.low() <= node.left.max)
+            collectOverlaps(node.left, interval, queue);
+        if (node.interval.overlaps(interval))
+            queue.enqueue(node.interval);
+        if (node.right != null && interval.high() >= node.interval.low() && interval.low() <= node.right.max)
+            collectOverlaps(node.right, interval, queue);
+    }
+
     public void print() {
         print(root);
         System.out.println();
@@ -314,6 +341,7 @@ public class IntervalTree {
         }
         tree.print();
         scanner = new Scanner(System.in);
+        System.out.println("test delete:");
         while (scanner.hasNextLine()) {
             String s = scanner.nextLine();
             if (s.equals("exit")) break;
@@ -323,14 +351,26 @@ public class IntervalTree {
             tree.delete(new Interval(low, high));
             tree.print();
         }
+        System.out.println("test searchMin:");
         while (scanner.hasNextLine()) {
             String s = scanner.nextLine();
             if (s.equals("exit")) break;
             String[] ss = s.split(" ");
             double low = Double.parseDouble(ss[0]);
             double high = Double.parseDouble(ss[1]);
-            Interval interval = tree.search(new Interval(low, high));
+            Interval interval = tree.searchMin(new Interval(low, high));
             System.out.println(interval);
+        }
+        System.out.println("test searchAll:");
+        while (scanner.hasNextLine()) {
+            String s = scanner.nextLine();
+            if (s.equals("exit")) break;
+            String[] ss = s.split(" ");
+            double low = Double.parseDouble(ss[0]);
+            double high = Double.parseDouble(ss[1]);
+            for (Interval interval : tree.searchAll(new Interval(low, high)))
+                System.out.print(interval + " ");
+            System.out.println();
         }
     }
 }
